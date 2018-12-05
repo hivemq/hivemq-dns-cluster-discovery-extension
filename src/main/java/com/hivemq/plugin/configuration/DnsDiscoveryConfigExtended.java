@@ -16,6 +16,7 @@
 package com.hivemq.plugin.configuration;
 
 import com.hivemq.plugin.api.annotations.NotNull;
+import com.hivemq.plugin.api.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,18 +34,19 @@ public class DnsDiscoveryConfigExtended {
 
     private final DnsDiscoveryConfig dnsDiscoveryConfig;
 
-    public DnsDiscoveryConfigExtended(@NotNull final ConfigurationReader reader) {
+    public DnsDiscoveryConfigExtended(final @NotNull ConfigurationReader reader) {
         dnsDiscoveryConfig = reader.get();
     }
 
     /**
      * method to get discovery address
-     *      either from environment variable
-     *      or from properties configuration
+     * either from environment variable
+     * or from properties configuration
+     *
      * @return String - the discovery address
      */
     public String discoveryAddress() {
-        final String discoveryAddress = System.getenv(DISCOVERY_ADDRESS_ENV);
+        final @Nullable String discoveryAddress = System.getenv(DISCOVERY_ADDRESS_ENV);
 
         if (discoveryAddress == null || discoveryAddress.isEmpty()) {
             try {
@@ -59,14 +61,15 @@ public class DnsDiscoveryConfigExtended {
 
     /**
      * method to get discovery timeout
-     *      either from environment variable
-     *      or from properties configuration
-     *      or default setting
+     * either from environment variable
+     * or from properties configuration
+     * or default setting
      *
      * @return int - the resolution timeout
      */
     public int resolutionTimeout() {
-        final String resolveTimeout = System.getenv(DISCOVERY_TIMEOUT_ENV);
+        final @Nullable String resolveTimeout = System.getenv(DISCOVERY_TIMEOUT_ENV);
+
         if (resolveTimeout != null && !resolveTimeout.isEmpty()) {
             try {
                 return Integer.parseInt(resolveTimeout);

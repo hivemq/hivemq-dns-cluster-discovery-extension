@@ -45,7 +45,7 @@ import java.util.stream.Collectors;
  * Cluster discovery using DNS resolution of round-robin A records.
  * Uses non-blocking netty API for DNS resolution, reads discovery parameters as environment variables.
  *
- * @author dkrueger
+ * @author Daniel Krüger
  */
 public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
@@ -68,22 +68,22 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     }
 
     @Override
-    public void init(@NotNull ClusterDiscoveryInput clusterDiscoveryInput, @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+    public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         ownAddress = clusterDiscoveryInput.getOwnAddress();
-        loadClusterNodeAddesses(clusterDiscoveryOutput);
+        loadClusterNodeAddresses(clusterDiscoveryOutput);
     }
 
     @Override
-    public void reload(@NotNull ClusterDiscoveryInput clusterDiscoveryInput, @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
-        loadClusterNodeAddesses(clusterDiscoveryOutput);
+    public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+        loadClusterNodeAddresses(clusterDiscoveryOutput);
     }
 
     @Override
-    public void destroy(@NotNull ClusterDiscoveryInput clusterDiscoveryInput) {
+    public void destroy(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput) {
         eventLoopGroup.shutdownGracefully();
     }
 
-    private void loadClusterNodeAddesses(@NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+    private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         try {
             final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
             if (clusterNodeAddresses != null) {

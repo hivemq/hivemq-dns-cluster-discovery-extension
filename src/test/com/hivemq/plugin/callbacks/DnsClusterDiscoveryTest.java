@@ -41,14 +41,17 @@ public class DnsClusterDiscoveryTest {
 
     ClusterNodeAddress cla = new ClusterNodeAddress("localhost", 1883);
 
-    @NotNull ClusterDiscoveryInput input = new ClusterDiscoveryInput() {
+    @NotNull
+    ClusterDiscoveryInput input = new ClusterDiscoveryInput() {
         @Override
-        public @NotNull ClusterNodeAddress getOwnAddress() {
+        public @NotNull
+        ClusterNodeAddress getOwnAddress() {
             return cla;
         }
 
         @Override
-        public @NotNull String getOwnClusterId() {
+        public @NotNull
+        String getOwnClusterId() {
             return "123";
         }
 
@@ -58,7 +61,8 @@ public class DnsClusterDiscoveryTest {
         }
     };
 
-    @NotNull ClusterDiscoveryOutput output = new ClusterDiscoveryOutput() {
+    @NotNull
+    ClusterDiscoveryOutput output = new ClusterDiscoveryOutput() {
         //added just to make addresses accessible for testing
         private String addresses;
 
@@ -72,14 +76,14 @@ public class DnsClusterDiscoveryTest {
         }
 
         @Override
+        public String toString() {
+            return addresses;
+        }        @Override
         public void setReloadInterval(int i) {
             i = 1;
         }
 
-        @Override
-        public String toString() {
-            return addresses;
-        }
+
     };
 
     @Before

@@ -16,6 +16,7 @@
 
 package com.hivemq.plugin.configuration;
 
+import com.hivemq.plugin.api.annotations.NotNull;
 import com.hivemq.plugin.api.parameter.PluginInformation;
 import org.aeonbits.owner.ConfigFactory;
 import org.slf4j.Logger;
@@ -27,19 +28,25 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+/**
+ * Configuration Reader that reads properties from config file
+ *
+ * @author Daniel Krüger
+ */
 public class ConfigurationReader {
 
     static final String CONFIG_PATH = "dnsdiscovery.properties";
     private static final Logger log = LoggerFactory.getLogger(ConfigurationReader.class);
     private final File pluginHomeFolder;
 
-    public ConfigurationReader(final PluginInformation pluginInformation) {
+    public ConfigurationReader(final @NotNull PluginInformation pluginInformation) {
         this.pluginHomeFolder = pluginInformation.getPluginHomeFolder();
         ConfigFactory.setProperty("configFile", new File(pluginHomeFolder, CONFIG_PATH).getAbsolutePath());
     }
 
     /**
      * method that loads and reloads the configuration for the dns discovery properties, by (re)creating the configuration
+     *
      * @return DnsDiscoveryConfig
      */
     public DnsDiscoveryConfig get() {

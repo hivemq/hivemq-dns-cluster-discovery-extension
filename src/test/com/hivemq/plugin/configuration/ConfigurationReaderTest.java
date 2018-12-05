@@ -33,14 +33,11 @@ public class ConfigurationReaderTest {
 
     @Rule
     public TemporaryFolder temporaryFolder = new TemporaryFolder();
-
-    private ConfigurationReader configurationReader;
-
-    @Mock
-    private PluginInformation pluginInformation;
-
     @Mock
     DnsDiscoveryConfigExtended defaultConfig;
+    private ConfigurationReader configurationReader;
+    @Mock
+    private PluginInformation pluginInformation;
 
     @Before
     public void init() {
@@ -83,7 +80,8 @@ public class ConfigurationReaderTest {
 
             out.write("discoveryAddress:\n" +
                     "resolutionTimeout:30Seconds");
-            out.flush(); out.close();
+            out.flush();
+            out.close();
 
             configurationReader = new ConfigurationReader(pluginInformation);
             configurationReader.get();

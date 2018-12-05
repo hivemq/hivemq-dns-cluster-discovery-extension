@@ -30,19 +30,29 @@ import com.hivemq.plugin.configuration.DnsDiscoveryConfigExtended;
 /**
  * This is the main class of the  dns discovery plugin, which is instantiated during the HiveMQ start up process.
  *
- * @author Anja helmbrecht-Schaar
+ * @author Anja Helmbrecht-Schaar
  */
 public class DnsDiscoveryPluginMainClass implements PluginMain {
 
     @Override
     public void pluginStart(@NotNull PluginStartInput pluginStartInput, @NotNull PluginStartOutput pluginStartOutput) {
-        final ConfigurationReader configurationReader = new ConfigurationReader(pluginStartInput.getPluginInformation());
-        Services.clusterService().addDiscoveryCallback(new DnsClusterDiscovery(new DnsDiscoveryConfigExtended(configurationReader)));
+        try {
+
+            final ConfigurationReader configurationReader = new ConfigurationReader(pluginStartInput.getPluginInformation());
+            if (configurationReader.get() == null) {
+                pluginStartOutput.preventPluginStartup("Unspecified error occurred while reading configuration");
+                return;
+            }
+            Services.clusterService().addDiscoveryCallback(new DnsClusterDiscovery(new DnsDiscoveryConfigExtended(configurationReader)));
+        } catch (final Exception e) {
+            pluginStartOutput.preventPluginStartup("Unknown error while starting the plugin" + ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
+            return;
+        }
     }
 
     @Override
     public void pluginStop(@NotNull PluginStopInput pluginStopInput, @NotNull PluginStopOutput pluginStopOutput) {
-
+        //nothing to do here
     }
 }
 
