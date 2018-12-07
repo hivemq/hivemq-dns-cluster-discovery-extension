@@ -4,7 +4,7 @@
 === Version: 1.0.0
 
 === License
-The plugin comes with a Apache License see file://[LICENSE.txt]
+The plugin comes with a Apache License. See `LICENSE.txt`
 
 === Purpose
 This plugin can be used with any cloud environment / container
@@ -67,7 +67,7 @@ tasks.hivemq.       600 IN  A   10.0.0.3
 This record represents a 5 node cluster on an overlay network.
 
 [[final-steps]]
-=== Final Steps
+=== How it works
 
 This diagram shows how DNS discovery is generally implemented on container engines.
 
@@ -82,7 +82,7 @@ This DNS server is the main endpoint the DNS discovery plugin will communicate w
 The record contains the list of containers/pods in the cluster, which HiveMQ will then use to discover the other nodes.
 
 [[usage]]
-=== Usage
+=== Container environment usage
 
 Most container orchestration environments support this type of discovery. See the following list for some examples:
 
