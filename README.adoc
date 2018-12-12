@@ -2,18 +2,20 @@
 :round-robin: https://en.wikipedia.org/wiki/Round-robin_DNS
 :docker-swarm: https://github.com/hivemq/hivemq4-docker-images#docker-swarm
 :dns-discovery-image: https://github.com/hivemq/hivemq4-docker-images#dns-discovery-image
+:hivemq-docker-image: https://github.com/hivemq/hivemq4-docker-images
 
 == HiveMQ DNS Cluster discovery extension
-*Type*: Integration
+*Extension Type*: Integration
 
 *Version*: 4.0.0
 
 *License*: Apache License 2.0
 
 === Purpose
-This extension can be used with any cloud environment / container
-orchestration environment that supports service discovery using a
-{round-robin}[round-robin^] A record.
+
+This HiveMQ extension enables you to operate elastic HiveMQ clusters with an container orchestration platform (Kubernetes, Openshift) as well as cloud environments. DNS is used as cluster discovery mechanism, which is ideal for environments that scale dynamically. HiveMQ instances are added and removed at runtime as soon as they become available via DNS. This extension is typically used with {hivemq-docker-image}[Docker] and container orchestration platforms.
+
+This extension can be used with any cloud environment / container orchestration environment that supports service discovery using a {round-robin}[round-robin^] DNS A record.
 
 === Installation
 The extension must be unzipped and the complete extension folder must be placed into the extensions folder.
