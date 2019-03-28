@@ -28,31 +28,47 @@ import com.hivemq.extensions.configuration.ConfigurationReader;
 import com.hivemq.extensions.configuration.DnsDiscoveryConfigExtended;
 
 /**
- * This is the main class of the  dns discovery extensions, which is instantiated during the HiveMQ start up process.
+ * This is the main class of the dns discovery extension, which is instantiated during the HiveMQ start up process.
  *
  * @author Anja Helmbrecht-Schaar
  */
 public class DnsDiscoveryExtensionMainClass implements ExtensionMain {
 
-    @Override
-    public void extensionStart(@NotNull ExtensionStartInput extensionStartInput, @NotNull ExtensionStartOutput extensionStartOutput) {
-        try {
+    private DnsClusterDiscovery dnsClusterDiscovery;
 
+    @Override
+    public void extensionStart(
+            final @NotNull ExtensionStartInput extensionStartInput,
+            final @NotNull ExtensionStartOutput extensionStartOutput) {
+
+        try {
             final ConfigurationReader configurationReader = new ConfigurationReader(extensionStartInput.getExtensionInformation());
             if (configurationReader.get() == null) {
                 extensionStartOutput.preventExtensionStartup("Unspecified error occurred while reading configuration");
                 return;
             }
-            Services.clusterService().addDiscoveryCallback(new DnsClusterDiscovery(new DnsDiscoveryConfigExtended(configurationReader)));
+
+            dnsClusterDiscovery = new DnsClusterDiscovery(new DnsDiscoveryConfigExtended(configurationReader));
+
+            try {
+                Services.clusterService().addDiscoveryCallback(dnsClusterDiscovery);
+            } catch (final UnsupportedOperationException e) {
+                extensionStartOutput.preventExtensionStartup(e.getMessage());
+            }
+
         } catch (final Exception e) {
-            extensionStartOutput.preventExtensionStartup("Unknown error while starting the extensions" + ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
-            return;
+            extensionStartOutput.preventExtensionStartup("Unknown error while starting the extension" + ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
         }
     }
 
     @Override
-    public void extensionStop(@NotNull ExtensionStopInput extensionStopInput, @NotNull ExtensionStopOutput extensionStopOutput) {
-        //nothing to do here
+    public void extensionStop(
+            final @NotNull ExtensionStopInput extensionStopInput,
+            final @NotNull ExtensionStopOutput extensionStopOutput) {
+
+        if (dnsClusterDiscovery != null) {
+            Services.clusterService().removeDiscoveryCallback(dnsClusterDiscovery);
+        }
     }
 }
 
