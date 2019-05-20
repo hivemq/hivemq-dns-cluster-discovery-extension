@@ -136,3 +136,12 @@ Docker swarm provides a DNS entry for service discovery by default. All you have
 ==== Need help?
 
 If you encounter any problems, we are happy to help. The best place to get in contact is our {hivemq-support}[support^].
+
+= Contributing
+
+If you want to contribute to HiveMQ DNS Cluster Discovery Extension, see the link:CONTRIBUTING.md[contribution guidelines].
+
+= License
+
+HiveMQ DNS Cluster Discovery Extension is licensed under the `APACHE LICENSE, VERSION 2.0`. A copy of the license can be found link:LICENSE.txt[here].
+
