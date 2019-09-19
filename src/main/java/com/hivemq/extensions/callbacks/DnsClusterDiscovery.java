@@ -49,8 +49,10 @@ import java.util.stream.Collectors;
  */
 public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
-    @NotNull
-    private static final Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
+    private static final @NotNull Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
+    private static final int MAX_ATTEMPTS_INITIAL = 5;
+    private static final int RETRY_INTERVAL = 1;
+
     @NotNull
     private final DnsDiscoveryConfigExtended discoveryConfiguration;
     @NotNull
@@ -70,12 +72,12 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     @Override
     public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         ownAddress = clusterDiscoveryInput.getOwnAddress();
-        loadClusterNodeAddresses(clusterDiscoveryOutput);
+        loadClusterNodeAddresses(clusterDiscoveryOutput, MAX_ATTEMPTS_INITIAL);
     }
 
     @Override
     public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
-        loadClusterNodeAddresses(clusterDiscoveryOutput);
+        loadClusterNodeAddresses(clusterDiscoveryOutput, 1);
     }
 
     @Override
@@ -83,11 +85,15 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         eventLoopGroup.shutdownGracefully();
     }
 
-    private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+    private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput, int numAttempts) {
         try {
-            final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
-            if (clusterNodeAddresses != null) {
-                clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
+            for (int i = 0; i < numAttempts; ++i) {
+                final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
+                if (clusterNodeAddresses != null && !clusterNodeAddresses.isEmpty()) {
+                    clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
+                    return;
+                }
+                TimeUnit.SECONDS.sleep(RETRY_INTERVAL);
             }
         } catch (TimeoutException | InterruptedException e) {
             log.error("Timeout while getting other node addresses");
@@ -115,7 +121,6 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
                     .filter((address) -> addressValidator.isValid(address.getHostAddress()))
                     .map((address) -> new ClusterNodeAddress(address.getHostAddress(), ownAddress.getPort()))
                     .collect(Collectors.toList());
-
             clusterNodeAddresses.forEach((address) -> log.debug("Found address: '{}'", address.getHost()));
             return clusterNodeAddresses;
         } catch (ExecutionException ex) {
