@@ -52,6 +52,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     private static final @NotNull Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
     private static final int MAX_ATTEMPTS_INITIAL = 5;
     private static final int RETRY_INTERVAL = 1;
+    public static final int BACKOFF_DISABLED = -1;
 
     @NotNull
     private final DnsDiscoveryConfigExtended discoveryConfiguration;
@@ -62,22 +63,42 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     @Nullable
     private ClusterNodeAddress ownAddress;
 
+    private int iteration;
+    private final int maxReloadInterval;
 
     public DnsClusterDiscovery(final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration) {
         this.eventLoopGroup = new NioEventLoopGroup();
         this.addressValidator = InetAddressValidator.getInstance();
         this.discoveryConfiguration = discoveryConfiguration;
+        this.iteration = 1;
+        this.maxReloadInterval = 30;
     }
 
     @Override
     public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         ownAddress = clusterDiscoveryInput.getOwnAddress();
         loadClusterNodeAddresses(clusterDiscoveryOutput, MAX_ATTEMPTS_INITIAL);
+        final double exponentialBackoff = Math.pow(2, iteration);
+        clusterDiscoveryOutput.setReloadInterval((int) Math.min(exponentialBackoff, maxReloadInterval));
+        iteration++;
     }
 
     @Override
     public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         loadClusterNodeAddresses(clusterDiscoveryOutput, 1);
+        final double exponentialBackoff = Math.pow(2, iteration);
+
+        // Disable the backoff after maximum is reached, we don't have a criterion for resetting the backoff at the moment.
+        if(iteration == BACKOFF_DISABLED) {
+            clusterDiscoveryOutput.setReloadInterval(maxReloadInterval);
+        } else {
+            clusterDiscoveryOutput.setReloadInterval((int) Math.min(exponentialBackoff, maxReloadInterval));
+        }
+        if(exponentialBackoff >= maxReloadInterval) {
+            iteration = -1;
+        } else {
+            iteration++;
+        }
     }
 
     @Override
