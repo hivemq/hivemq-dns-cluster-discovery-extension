@@ -52,6 +52,7 @@ import java.util.stream.Collectors;
 public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
     private static final @NotNull Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
+    /* Back-off disabled due to reaching the max interval until a node is added / removed */
     public static final int BACKOFF_DISABLED = -1;
 
     @NotNull
