@@ -28,6 +28,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
 import io.netty.util.concurrent.Future;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,11 +47,14 @@ import java.util.stream.Collectors;
  * Uses non-blocking netty API for DNS resolution, reads discovery parameters as environment variables.
  *
  * @author Daniel Krüger
+ * @author Simon Baier
  */
 public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
-    @NotNull
-    private static final Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
+    private static final @NotNull Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
+    /* Back-off disabled due to reaching the max interval until a node is added / removed */
+    public static final int BACKOFF_DISABLED = -1;
+
     @NotNull
     private final DnsDiscoveryConfigExtended discoveryConfiguration;
     @NotNull
@@ -60,22 +64,35 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     @Nullable
     private ClusterNodeAddress ownAddress;
 
+    private int iteration;
+    private int initialReloadInterval;
+    private int maxReloadInterval;
+    private boolean backOffEnabled;
+
+    private List<ClusterNodeAddress> previousClusterNodes;
 
     public DnsClusterDiscovery(final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration) {
         this.eventLoopGroup = new NioEventLoopGroup();
         this.addressValidator = InetAddressValidator.getInstance();
         this.discoveryConfiguration = discoveryConfiguration;
+        this.iteration = 1;
     }
 
     @Override
     public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+        this.maxReloadInterval = discoveryConfiguration.maxDiscoveryInterval();
+        this.initialReloadInterval = discoveryConfiguration.initialDiscoveryInterval();
+        this.backOffEnabled = initialReloadInterval < maxReloadInterval;
         ownAddress = clusterDiscoveryInput.getOwnAddress();
         loadClusterNodeAddresses(clusterDiscoveryOutput);
+        clusterDiscoveryOutput.setReloadInterval(getReloadInterval());
     }
 
     @Override
     public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         loadClusterNodeAddresses(clusterDiscoveryOutput);
+
+        clusterDiscoveryOutput.setReloadInterval(getReloadInterval());
     }
 
     @Override
@@ -86,7 +103,17 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         try {
             final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
-            if (clusterNodeAddresses != null) {
+
+            if (backOffEnabled && previousClusterNodes != null && clusterNodeAddresses != null
+                    && previousClusterNodes.size() != clusterNodeAddresses.size()) {
+                if (!CollectionUtils.isEqualCollection(previousClusterNodes, clusterNodeAddresses)) {
+                    // Reset the exponential back-off on topology changes to detect new nodes faster
+                    iteration = 1;
+                }
+            }
+            previousClusterNodes = clusterNodeAddresses;
+
+            if (clusterNodeAddresses != null && !clusterNodeAddresses.isEmpty()) {
                 clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
             }
         } catch (TimeoutException | InterruptedException e) {
@@ -115,7 +142,6 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
                     .filter((address) -> addressValidator.isValid(address.getHostAddress()))
                     .map((address) -> new ClusterNodeAddress(address.getHostAddress(), ownAddress.getPort()))
                     .collect(Collectors.toList());
-
             clusterNodeAddresses.forEach((address) -> log.debug("Found address: '{}'", address.getHost()));
             return clusterNodeAddresses;
         } catch (ExecutionException ex) {
@@ -124,4 +150,21 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         return null;
     }
 
+    private int getReloadInterval() {
+        if(!backOffEnabled) {
+            // exponential back-off disabled
+            return maxReloadInterval;
+        }
+        if (iteration != BACKOFF_DISABLED) {
+            final int backOff = (int) Math.pow(2, iteration);
+
+            if (backOff >= maxReloadInterval) {
+                iteration = BACKOFF_DISABLED;
+            } else {
+                iteration++;
+            }
+            return Math.max(initialReloadInterval, Math.min(backOff, maxReloadInterval));
+        }
+        return maxReloadInterval;
+    }
 }
