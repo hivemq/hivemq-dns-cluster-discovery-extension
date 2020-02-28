@@ -28,6 +28,7 @@ import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
 import io.netty.util.concurrent.Future;
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,12 +47,11 @@ import java.util.stream.Collectors;
  * Uses non-blocking netty API for DNS resolution, reads discovery parameters as environment variables.
  *
  * @author Daniel Krüger
+ * @author Simon Baier
  */
 public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
     private static final @NotNull Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
-    private static final int MAX_ATTEMPTS_INITIAL = 5;
-    private static final int RETRY_INTERVAL = 1;
     public static final int BACKOFF_DISABLED = -1;
 
     @NotNull
@@ -64,41 +64,34 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     private ClusterNodeAddress ownAddress;
 
     private int iteration;
+    private final int initialReloadInterval;
     private final int maxReloadInterval;
+    private final boolean backOffEnabled;
+
+    private List<ClusterNodeAddress> previousClusterNodes;
 
     public DnsClusterDiscovery(final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration) {
         this.eventLoopGroup = new NioEventLoopGroup();
         this.addressValidator = InetAddressValidator.getInstance();
         this.discoveryConfiguration = discoveryConfiguration;
         this.iteration = 1;
-        this.maxReloadInterval = 30;
+        this.maxReloadInterval = discoveryConfiguration.maxDiscoveryInterval();
+        this.initialReloadInterval = discoveryConfiguration.initialDiscoveryInterval();
+        this.backOffEnabled = initialReloadInterval < maxReloadInterval;
     }
 
     @Override
     public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         ownAddress = clusterDiscoveryInput.getOwnAddress();
-        loadClusterNodeAddresses(clusterDiscoveryOutput, MAX_ATTEMPTS_INITIAL);
-        final double exponentialBackoff = Math.pow(2, iteration);
-        clusterDiscoveryOutput.setReloadInterval((int) Math.min(exponentialBackoff, maxReloadInterval));
-        iteration++;
+        loadClusterNodeAddresses(clusterDiscoveryOutput);
+        clusterDiscoveryOutput.setReloadInterval(getReloadInterval());
     }
 
     @Override
     public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
-        loadClusterNodeAddresses(clusterDiscoveryOutput, 1);
-        final double exponentialBackoff = Math.pow(2, iteration);
+        loadClusterNodeAddresses(clusterDiscoveryOutput);
 
-        // Disable the backoff after maximum is reached, we don't have a criterion for resetting the backoff at the moment.
-        if(iteration == BACKOFF_DISABLED) {
-            clusterDiscoveryOutput.setReloadInterval(maxReloadInterval);
-        } else {
-            clusterDiscoveryOutput.setReloadInterval((int) Math.min(exponentialBackoff, maxReloadInterval));
-        }
-        if(exponentialBackoff >= maxReloadInterval) {
-            iteration = -1;
-        } else {
-            iteration++;
-        }
+        clusterDiscoveryOutput.setReloadInterval(getReloadInterval());
     }
 
     @Override
@@ -106,15 +99,21 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         eventLoopGroup.shutdownGracefully();
     }
 
-    private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput, int numAttempts) {
+    private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         try {
-            for (int i = 0; i < numAttempts; ++i) {
-                final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
-                if (clusterNodeAddresses != null && !clusterNodeAddresses.isEmpty()) {
-                    clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
-                    return;
+            final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
+
+            if (backOffEnabled && previousClusterNodes != null && clusterNodeAddresses != null
+                    && previousClusterNodes.size() != clusterNodeAddresses.size()) {
+                if (!CollectionUtils.isEqualCollection(previousClusterNodes, clusterNodeAddresses)) {
+                    // Reset the exponential back-off on topology changes to detect new nodes faster
+                    iteration = 1;
                 }
-                TimeUnit.SECONDS.sleep(RETRY_INTERVAL);
+            }
+            previousClusterNodes = clusterNodeAddresses;
+
+            if (clusterNodeAddresses != null && !clusterNodeAddresses.isEmpty()) {
+                clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
             }
         } catch (TimeoutException | InterruptedException e) {
             log.error("Timeout while getting other node addresses");
@@ -150,4 +149,21 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         return null;
     }
 
+    private int getReloadInterval() {
+        if(!backOffEnabled) {
+            // exponential back-off disabled
+            return maxReloadInterval;
+        }
+        if (iteration != BACKOFF_DISABLED) {
+            final int backOff = (int) Math.pow(2, iteration);
+
+            if (backOff >= maxReloadInterval) {
+                iteration = BACKOFF_DISABLED;
+            } else {
+                iteration++;
+            }
+            return Math.max(initialReloadInterval, Math.min(backOff, maxReloadInterval));
+        }
+        return maxReloadInterval;
+    }
 }

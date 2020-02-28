@@ -31,8 +31,10 @@ public class DnsDiscoveryConfigExtended {
 
     private static final String DISCOVERY_ADDRESS_ENV = "HIVEMQ_DNS_DISCOVERY_ADDRESS";
     private static final String DISCOVERY_TIMEOUT_ENV = "HIVEMQ_DNS_DISCOVERY_TIMEOUT";
+    private static final String MAX_DISCOVERY_INTERVAL_ENV = "HIVEMQ_DNS_DISCOVERY_INTERVAL_MAX";
+    private static final String INITIAL_DISCOVERY_INTERVAL_ENV = "HIVEMQ_DNS_DISCOVERY_INTERVAL_INITIAL";
 
-    private final DnsDiscoveryConfig dnsDiscoveryConfig;
+    private final @NotNull DnsDiscoveryConfig dnsDiscoveryConfig;
 
     public DnsDiscoveryConfigExtended(final @NotNull ConfigurationReader reader) {
         dnsDiscoveryConfig = reader.get();
@@ -45,7 +47,7 @@ public class DnsDiscoveryConfigExtended {
      *
      * @return String - the discovery address
      */
-    public String discoveryAddress() {
+    public @Nullable String discoveryAddress() {
         final @Nullable String discoveryAddress = System.getenv(DISCOVERY_ADDRESS_ENV);
 
         if (discoveryAddress == null || discoveryAddress.isEmpty()) {
@@ -57,6 +59,48 @@ public class DnsDiscoveryConfigExtended {
             }
         }
         return discoveryAddress;
+    }
+
+    /**
+     * method to get initial discovery interval
+     * either from environment variable
+     * or from properties configuration
+     * or default setting
+     *
+     * @return int - the initial discovery interval
+     */
+    public int initialDiscoveryInterval() {
+        final @Nullable String initialDiscoveryInterval = System.getenv(INITIAL_DISCOVERY_INTERVAL_ENV);
+
+        if (initialDiscoveryInterval != null && !initialDiscoveryInterval.isEmpty()) {
+            try {
+                return Integer.parseInt(initialDiscoveryInterval);
+            } catch (NumberFormatException e) {
+                log.error("Resolution timeout from env {} couldn't be parsed to int. Fallback to config value.", INITIAL_DISCOVERY_INTERVAL_ENV);
+            }
+        }
+        return dnsDiscoveryConfig.initialDiscoveryInterval();
+    }
+
+    /**
+     * method to get maximum discovery interval
+     * either from environment variable
+     * or from properties configuration
+     * or default setting
+     *
+     * @return int - the maximum discovery interval
+     */
+    public int maxDiscoveryInterval() {
+        final @Nullable String maxDiscoveryInterval = System.getenv(MAX_DISCOVERY_INTERVAL_ENV);
+
+        if (maxDiscoveryInterval != null && !maxDiscoveryInterval.isEmpty()) {
+            try {
+                return Integer.parseInt(maxDiscoveryInterval);
+            } catch (NumberFormatException e) {
+                log.error("Resolution timeout from env {} couldn't be parsed to int. Fallback to config value.", MAX_DISCOVERY_INTERVAL_ENV);
+            }
+        }
+        return dnsDiscoveryConfig.maxDiscoveryInterval();
     }
 
     /**

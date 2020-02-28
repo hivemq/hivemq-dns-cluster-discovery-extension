@@ -94,7 +94,7 @@ public class DnsClusterDiscoveryTest {
 
     @Test
     public void testDnsClusterDiscoverySingleNode() throws Exception {
-        final String discoveryAddress = "www.dc-square.de";
+        final String discoveryAddress = "www.hivemq.com";
         final int discoveryTimeout = 30;
 
         when(configuration.discoveryAddress()).thenReturn(discoveryAddress);
