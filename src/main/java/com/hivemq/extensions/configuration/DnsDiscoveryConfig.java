@@ -30,10 +30,10 @@ public interface DnsDiscoveryConfig extends Config {
     int maxDiscoveryInterval();
 
     @Key("initialDiscoveryInterval")
-    @DefaultValue("5")
+    @DefaultValue("60")
     int initialDiscoveryInterval();
 
     @Key("resolutionTimeout")
-    @DefaultValue("30")
+    @DefaultValue("60")
     int resolutionTimeout();
 }

@@ -7,7 +7,7 @@
 == HiveMQ DNS Cluster discovery extension
 *Extension Type*: Integration
 
-*Version*: 4.0.1
+*Version*: 4.1.0
 
 *License*: Apache License 2.0
 
@@ -37,11 +37,11 @@ broker shutdown.
 *Configuration options:*
 
 |=======================================================================
-|Environment Variable |Default value |property key |Meaning
-|HIVEMQ_DNS_DISCOVERY_ADDRESS |- |discoveryAddress |Address providing the A
-record for the usage as cluster node addresses
-|HIVEMQ_DNS_DISCOVERY_TIMEOUT |30 |resolutionTimeout |Wait time
-for DNS resolution to complete
+|Environment Variable                   |Default value  |property key            |Meaning
+|HIVEMQ_DNS_DISCOVERY_ADDRESS           |-              |discoveryAddress        |Address providing the A record for the usage as cluster node addresses
+|HIVEMQ_DNS_DISCOVERY_TIMEOUT           |30             |resolutionTimeout       |Wait time for DNS resolution to complete
+|HIVEMQ_DNS_DISCOVERY_INTERVAL_MAX      |60             |maxDiscoveryInterval    |Maximum discovery interval in seconds
+|HIVEMQ_DNS_DISCOVERY_INTERVAL_INITIAL  |60             |initialDiscoveryInterval|Initial discovery interval in seconds when using exponential back-off. This is the lower clamping value for the back-off.
 |=======================================================================
 
 [[sample-dns-record]]
