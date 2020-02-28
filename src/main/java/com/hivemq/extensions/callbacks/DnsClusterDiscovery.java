@@ -64,9 +64,9 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     private ClusterNodeAddress ownAddress;
 
     private int iteration;
-    private final int initialReloadInterval;
-    private final int maxReloadInterval;
-    private final boolean backOffEnabled;
+    private int initialReloadInterval;
+    private int maxReloadInterval;
+    private boolean backOffEnabled;
 
     private List<ClusterNodeAddress> previousClusterNodes;
 
@@ -75,13 +75,13 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         this.addressValidator = InetAddressValidator.getInstance();
         this.discoveryConfiguration = discoveryConfiguration;
         this.iteration = 1;
-        this.maxReloadInterval = discoveryConfiguration.maxDiscoveryInterval();
-        this.initialReloadInterval = discoveryConfiguration.initialDiscoveryInterval();
-        this.backOffEnabled = initialReloadInterval < maxReloadInterval;
     }
 
     @Override
     public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+        this.maxReloadInterval = discoveryConfiguration.maxDiscoveryInterval();
+        this.initialReloadInterval = discoveryConfiguration.initialDiscoveryInterval();
+        this.backOffEnabled = initialReloadInterval < maxReloadInterval;
         ownAddress = clusterDiscoveryInput.getOwnAddress();
         loadClusterNodeAddresses(clusterDiscoveryOutput);
         clusterDiscoveryOutput.setReloadInterval(getReloadInterval());

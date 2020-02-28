@@ -27,6 +27,7 @@ import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.when;
@@ -38,6 +39,8 @@ public class DnsClusterDiscoveryTest {
 
     @Mock
     DnsDiscoveryConfigExtended configuration;
+
+    final AtomicInteger nextReload = new AtomicInteger(0);
 
     ClusterNodeAddress cla = new ClusterNodeAddress("localhost", 1883);
 
@@ -71,19 +74,18 @@ public class DnsClusterDiscoveryTest {
             if (list == null) {
                 list = new ArrayList<ClusterNodeAddress>();
             }
-            list.add(cla);
             addresses = list.iterator().next().getHost();
         }
 
         @Override
         public String toString() {
             return addresses;
-        }        @Override
-        public void setReloadInterval(int i) {
-            i = 1;
         }
 
-
+        @Override
+        public void setReloadInterval(int i) {
+           nextReload.set(i);
+        }
     };
 
     @Before
@@ -105,6 +107,30 @@ public class DnsClusterDiscoveryTest {
 
         // A record for dc-square.de
         assertEquals("212.72.72.12", output.toString());
+    }
+
+    @Test
+    public void testBackOff() throws Exception {
+        final String discoveryAddress = "www.hivemq.com";
+        final int discoveryTimeout = 30;
+
+        when(configuration.discoveryAddress()).thenReturn(discoveryAddress);
+        when(configuration.resolutionTimeout()).thenReturn(discoveryTimeout);
+        when(configuration.initialDiscoveryInterval()).thenReturn(1);
+        when(configuration.maxDiscoveryInterval()).thenReturn(60);
+
+        dnsClusterDiscovery.init(input, output);
+        assertEquals(2, nextReload.get());
+        dnsClusterDiscovery.reload(input, output);
+        assertEquals(4, nextReload.get());
+        dnsClusterDiscovery.reload(input, output);
+        assertEquals(8, nextReload.get());
+        dnsClusterDiscovery.reload(input, output);
+        assertEquals(16, nextReload.get());
+        dnsClusterDiscovery.reload(input, output);
+        assertEquals(32, nextReload.get());
+        dnsClusterDiscovery.reload(input, output);
+        assertEquals(60, nextReload.get());
     }
 
 }
