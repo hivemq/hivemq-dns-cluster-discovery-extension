@@ -26,7 +26,7 @@ public interface DnsDiscoveryConfig extends Config {
     String discoveryAddress();
 
     @Key("maxDiscoveryInterval")
-    @DefaultValue("120")
+    @DefaultValue("60")
     int maxDiscoveryInterval();
 
     @Key("initialDiscoveryInterval")
@@ -34,6 +34,6 @@ public interface DnsDiscoveryConfig extends Config {
     int initialDiscoveryInterval();
 
     @Key("resolutionTimeout")
-    @DefaultValue("60")
+    @DefaultValue("30")
     int resolutionTimeout();
 }
