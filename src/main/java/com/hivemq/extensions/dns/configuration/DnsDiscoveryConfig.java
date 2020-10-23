@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.configuration;
+package com.hivemq.extensions.dns.configuration;
 
 import org.aeonbits.owner.Config;
 

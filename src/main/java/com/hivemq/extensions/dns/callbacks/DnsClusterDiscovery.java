@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.callbacks;
+package com.hivemq.extensions.dns.callbacks;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
@@ -22,7 +22,8 @@ import com.hivemq.extension.sdk.api.services.cluster.ClusterDiscoveryCallback;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.extensions.configuration.DnsDiscoveryConfigExtended;
+import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigExtended;
+import com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.resolver.dns.DnsNameResolver;
@@ -38,6 +39,7 @@ import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 
@@ -49,32 +51,38 @@ import java.util.stream.Collectors;
  */
 public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
-    @NotNull
-    private static final Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
-    @NotNull
-    private final DnsDiscoveryConfigExtended discoveryConfiguration;
-    @NotNull
-    private final NioEventLoopGroup eventLoopGroup;
-    @NotNull
-    private final InetAddressValidator addressValidator;
-    @Nullable
-    private ClusterNodeAddress ownAddress;
+    private static final @NotNull Logger log = LoggerFactory.getLogger(DnsClusterDiscovery.class);
+
+    private final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration;
+    private final @NotNull DnsDiscoveryMetrics dnsDiscoveryMetrics;
+    private final @NotNull NioEventLoopGroup eventLoopGroup;
+    private final @NotNull InetAddressValidator addressValidator;
+
+    private final @NotNull AtomicInteger addressesCount = new AtomicInteger(0);
+
+    private @Nullable ClusterNodeAddress ownAddress;
 
 
-    public DnsClusterDiscovery(final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration) {
+    public DnsClusterDiscovery(final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration,
+                               final @NotNull DnsDiscoveryMetrics dnsDiscoveryMetrics) {
         this.eventLoopGroup = new NioEventLoopGroup();
         this.addressValidator = InetAddressValidator.getInstance();
         this.discoveryConfiguration = discoveryConfiguration;
+        this.dnsDiscoveryMetrics = dnsDiscoveryMetrics;
+
+        dnsDiscoveryMetrics.registerAddressCountGauge(addressesCount::get);
     }
 
     @Override
-    public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+    public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
+                     final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         ownAddress = clusterDiscoveryInput.getOwnAddress();
         loadClusterNodeAddresses(clusterDiscoveryOutput);
     }
 
     @Override
-    public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput, final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+    public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
+                       final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         loadClusterNodeAddresses(clusterDiscoveryOutput);
     }
 
@@ -82,6 +90,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     public void destroy(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput) {
         eventLoopGroup.shutdownGracefully();
     }
+
 
     private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         try {
@@ -91,20 +100,20 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
             }
         } catch (TimeoutException | InterruptedException e) {
             log.error("Timeout while getting other node addresses");
+            dnsDiscoveryMetrics.getResolutionRequestFailedCounter().inc();
         }
     }
 
-    private List<ClusterNodeAddress> loadOtherNodes() throws TimeoutException, InterruptedException {
+    private @Nullable List<ClusterNodeAddress> loadOtherNodes() throws TimeoutException, InterruptedException {
 
         final String discoveryAddress = discoveryConfiguration.discoveryAddress();
         if (discoveryAddress == null) {
             return null;
         }
-
         final int discoveryTimeout = discoveryConfiguration.resolutionTimeout();
 
         // initialize netty DNS resolver
-        try (DnsNameResolver resolver = new DnsNameResolverBuilder(eventLoopGroup.next()).channelType(NioDatagramChannel.class).build()) {
+        try (final DnsNameResolver resolver = new DnsNameResolverBuilder(eventLoopGroup.next()).channelType(NioDatagramChannel.class).build()) {
 
             final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress);
             final List<ClusterNodeAddress> clusterNodeAddresses = addresses.get(discoveryTimeout, TimeUnit.SECONDS)
@@ -117,9 +126,12 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
                     .collect(Collectors.toList());
 
             clusterNodeAddresses.forEach((address) -> log.debug("Found address: '{}'", address.getHost()));
+            addressesCount.set(clusterNodeAddresses.size());
+
             return clusterNodeAddresses;
-        } catch (ExecutionException ex) {
+        } catch (final ExecutionException ex) {
             log.error("Failed to resolve DNS record for address '{}'.", discoveryAddress, ex);
+            dnsDiscoveryMetrics.getResolutionRequestFailedCounter().inc();
         }
         return null;
     }

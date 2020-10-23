@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hivemq.extensions.configuration;
+package com.hivemq.extensions.dns.configuration;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
@@ -46,12 +46,12 @@ public class DnsDiscoveryConfigExtended {
      * @return String - the discovery address
      */
     public String discoveryAddress() {
-        final @Nullable String discoveryAddress = System.getenv(DISCOVERY_ADDRESS_ENV);
+        String discoveryAddress = System.getenv(DISCOVERY_ADDRESS_ENV);
 
         if (discoveryAddress == null || discoveryAddress.isEmpty()) {
-            try {
-                return dnsDiscoveryConfig.discoveryAddress();
-            } catch (Exception e) {
+            discoveryAddress = dnsDiscoveryConfig.discoveryAddress();
+
+            if (discoveryAddress == null || discoveryAddress.isEmpty()) {
                 log.error("No discovery address was set in the configuration file or environment variable");
                 return null;
             }
