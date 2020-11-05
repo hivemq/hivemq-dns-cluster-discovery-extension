@@ -45,13 +45,13 @@ public class DnsDiscoveryConfigExtended {
      *
      * @return String - the discovery address
      */
-    public String discoveryAddress() {
-        String discoveryAddress = System.getenv(DISCOVERY_ADDRESS_ENV);
+    public @Nullable String discoveryAddress() {
+        final String discoveryAddress = System.getenv(DISCOVERY_ADDRESS_ENV);
 
         if (discoveryAddress == null || discoveryAddress.isEmpty()) {
-            discoveryAddress = dnsDiscoveryConfig.discoveryAddress();
-
-            if (discoveryAddress == null || discoveryAddress.isEmpty()) {
+            try {
+                return dnsDiscoveryConfig.discoveryAddress();
+            } catch (Exception e) {
                 log.error("No discovery address was set in the configuration file or environment variable");
                 return null;
             }

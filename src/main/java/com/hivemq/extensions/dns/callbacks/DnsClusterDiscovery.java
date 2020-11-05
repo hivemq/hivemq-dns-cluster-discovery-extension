@@ -97,6 +97,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
             final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
             if (clusterNodeAddresses != null) {
                 clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
+                dnsDiscoveryMetrics.getResolutionRequestCounter().inc();
             }
         } catch (TimeoutException | InterruptedException e) {
             log.error("Timeout while getting other node addresses");
@@ -108,6 +109,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
         final String discoveryAddress = discoveryConfiguration.discoveryAddress();
         if (discoveryAddress == null) {
+            dnsDiscoveryMetrics.getResolutionRequestFailedCounter().inc();
             return null;
         }
         final int discoveryTimeout = discoveryConfiguration.resolutionTimeout();

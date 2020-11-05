@@ -41,7 +41,7 @@ dependencies {
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit-jupiter.version")}")
-    //testImplementation("org.junit.jupiter:junit-jupiter-params:${property("junit-jupiter.version")}")
+    testImplementation("org.junit.jupiter:junit-jupiter-params:${property("junit-jupiter.version")}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${property("junit-jupiter.version")}")
 
     //testImplementation("io.github.glytching:junit-extensions:${property("junit-extensions.version")}")
