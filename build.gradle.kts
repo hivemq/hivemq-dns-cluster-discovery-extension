@@ -44,7 +44,6 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-params:${property("junit-jupiter.version")}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${property("junit-jupiter.version")}")
 
-    //testImplementation("io.github.glytching:junit-extensions:${property("junit-extensions.version")}")
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
     testImplementation("org.mockito:mockito-junit-jupiter:${property("mockito.version")}")
 }
@@ -65,6 +64,48 @@ tasks.withType<Test>().configureEach {
         exclude(exclusions.readLines())
     }
 }
+
+
+/* ******************** integration test ******************** */
+
+sourceSets {
+    create("integrationTest") {
+        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+        runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+    }
+}
+
+configurations {
+    getByName("integrationTestImplementation").extendsFrom(testImplementation.get())
+    getByName("integrationTestRuntimeOnly").extendsFrom(testRuntimeOnly.get())
+}
+
+dependencies {
+    "integrationTestImplementation"("org.apache.directory.server:apacheds-protocol-dns:${property("apache-dns.version")}")
+    "integrationTestImplementation"("org.testcontainers:junit-jupiter:${property("testcontainers.version")}")
+    "integrationTestImplementation"("com.hivemq:hivemq-testcontainer-junit5:${property("hivemq-testcontainer.version")}")
+    "integrationTestImplementation"("net.lingala.zip4j:zip4j:${property("zip4j.version")}")
+}
+
+val prepareExtensionTest by tasks.registering(Sync::class) {
+    group = "hivemq extension"
+    description = "Prepares the extension for integration testing."
+
+    from(tasks.hivemqExtensionZip.map { zipTree(it.archiveFile) })
+    into(buildDir.resolve("hivemq-extension-test"))
+}
+
+val integrationTest by tasks.registering(Test::class) {
+    group = "verification"
+    description = "Runs integration tests."
+
+    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
+    classpath = sourceSets["integrationTest"].runtimeClasspath
+    shouldRunAfter(tasks.test)
+    dependsOn(prepareExtensionTest)
+}
+
+tasks.check { dependsOn(integrationTest) }
 
 
 /* ******************** static code analysis ******************** */
@@ -99,7 +140,7 @@ val unzipHivemq by tasks.registering(Sync::class) {
 }
 
 tasks.prepareHivemqHome {
-    hivemqFolder.set("/Users/lbrand/Desktop/hivemq-4.4.0")//unzipHivemq.map { it.destinationDir.resolve("hivemq-4.4.0") } as Any)
+    unzipHivemq.map { it.destinationDir.resolve("hivemq-4.4.0") }
 }
 
 tasks.runHivemqWithExtension {

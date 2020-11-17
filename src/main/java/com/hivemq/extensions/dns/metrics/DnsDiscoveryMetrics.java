@@ -20,8 +20,8 @@ public class DnsDiscoveryMetrics {
 
     public DnsDiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
-        this.connectCounter = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "resolution-request-success.count"));
-        this.failedConnectCounter = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "resolution-request-failed.count"));
+        this.connectCounter = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "query.success.count"));
+        this.failedConnectCounter = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "query.failed.count"));
     }
 
     public @NotNull Counter getResolutionRequestCounter() {
@@ -35,7 +35,7 @@ public class DnsDiscoveryMetrics {
 
     public void registerAddressCountGauge(final @NotNull Gauge<Integer> supplier) {
         metricRegistry.gauge(
-                MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "resolved-addresses.gauge"),
+                MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "resolved-addresses"),
                 () -> supplier);
     }
 

@@ -22,6 +22,9 @@ import org.aeonbits.owner.Config;
 @Config.Sources("file:${configFile}")
 public interface DnsDiscoveryConfig extends Config {
 
+    @Key("dnsServerAddress")
+    String dnsServerAddress();
+
     @Key("discoveryAddress")
     String discoveryAddress();
 

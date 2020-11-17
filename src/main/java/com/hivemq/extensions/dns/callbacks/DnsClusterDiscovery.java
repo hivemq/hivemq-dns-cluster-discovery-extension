@@ -28,13 +28,16 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
+import io.netty.resolver.dns.SingletonDnsServerAddressStreamProvider;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -48,6 +51,7 @@ import java.util.stream.Collectors;
  * Uses non-blocking netty API for DNS resolution, reads discovery parameters as environment variables.
  *
  * @author Daniel Krüger
+ * @author Lukas Brand
  */
 public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
@@ -109,13 +113,27 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
         final String discoveryAddress = discoveryConfiguration.discoveryAddress();
         if (discoveryAddress == null) {
-            dnsDiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            log.warn("Discovery address not set, skipping dns query.");
             return null;
         }
         final int discoveryTimeout = discoveryConfiguration.resolutionTimeout();
 
         // initialize netty DNS resolver
-        try (final DnsNameResolver resolver = new DnsNameResolverBuilder(eventLoopGroup.next()).channelType(NioDatagramChannel.class).build()) {
+        final DnsNameResolverBuilder dnsNameResolverBuilder = new DnsNameResolverBuilder(eventLoopGroup.next())
+                .channelType(NioDatagramChannel.class)
+                .optResourceEnabled(false);
+
+        // use custom DNS server address if necessary
+        final Map<String, Integer> dnsServerAddress = discoveryConfiguration.dnsServerAddress();
+        if (dnsServerAddress != null) {
+            final String address = dnsServerAddress.keySet().iterator().next();
+            final int port = dnsServerAddress.get(address);
+
+            final InetSocketAddress dnsInetSocketAddress = new InetSocketAddress(address, port);
+            dnsNameResolverBuilder.nameServerProvider(new SingletonDnsServerAddressStreamProvider(dnsInetSocketAddress));
+        }
+
+        try (final DnsNameResolver resolver = dnsNameResolverBuilder.build()) {
 
             final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress);
             final List<ClusterNodeAddress> clusterNodeAddresses = addresses.get(discoveryTimeout, TimeUnit.SECONDS)

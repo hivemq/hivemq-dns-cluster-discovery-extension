@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<hivemq>
+
+    <listeners>
+        <tcp-listener>
+            <port>1883</port>
+            <bind-address>0.0.0.0</bind-address>
+        </tcp-listener>
+    </listeners>
+
+    <cluster>
+        <enabled>true</enabled>
+        <transport>
+            <tcp/>
+        </transport>
+        <discovery>
+            <extension/>
+        </discovery>
+    </cluster>
+
+    <anonymous-usage-statistics>
+        <enabled>true</enabled>
+    </anonymous-usage-statistics>
+
+</hivemq>

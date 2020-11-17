@@ -106,6 +106,7 @@ public class DnsClusterDiscoveryTest {
         final String discoveryAddress = "www.hivemq.com";
         final int discoveryTimeout = 30;
 
+        when(configuration.dnsServerAddress()).thenReturn(null);
         when(configuration.discoveryAddress()).thenReturn(discoveryAddress);
         when(configuration.resolutionTimeout()).thenReturn(discoveryTimeout);
 
