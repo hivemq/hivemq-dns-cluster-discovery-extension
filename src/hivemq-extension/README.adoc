@@ -143,15 +143,13 @@ The Dns Cluster discovery extension delivers a set of metrics, that can be used 
 
 The following metrics are available:
 
-Counter:
-
+These two counter metrics indicate a successful or failed dns query attempt in order to receive the IP addresses of cluster members:
 ----
 com.hivemq.dns-cluster-discovery-extension.query.success.count
 com.hivemq.dns-cluster-discovery-extension.query.failed.count
 ----
 
-Gauge:
-
+This gauge shows the currently found addresses that were received during the last dns query:
 ----
 com.hivemq.dns-cluster-discovery-extension.resolved-addresses
 ----
