@@ -149,7 +149,7 @@ com.hivemq.dns-cluster-discovery-extension.query.success.count
 com.hivemq.dns-cluster-discovery-extension.query.failed.count
 ----
 
-This gauge shows the currently found addresses that were received during the last dns query:
+This gauge shows the currently found cluster member addresses that were received during the last dns query:
 ----
 com.hivemq.dns-cluster-discovery-extension.resolved-addresses
 ----
