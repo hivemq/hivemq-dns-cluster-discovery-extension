@@ -5,6 +5,7 @@ plugins {
     id("pmd")
     id("com.github.spotbugs")
     id("com.github.sgtsilvio.gradle.utf8")
+    id("org.asciidoctor.jvm.convert")
 }
 
 
@@ -34,6 +35,24 @@ dependencies {
     implementation("ch.qos.logback:logback-classic:${property("logback-classic.version")}")
     implementation("io.netty:netty-resolver-dns:${property("netty-resolver-dns.version")}")
     implementation("commons-validator:commons-validator:${property("commons-validator.version")}")
+}
+
+
+/* ******************** resources ******************** */
+
+val prepareAsciidoc by tasks.registering(Sync::class) {
+    from("README.adoc").into({ temporaryDir })
+}
+
+tasks.asciidoctor {
+    dependsOn(prepareAsciidoc)
+    sourceDir(prepareAsciidoc.map { it.destinationDir })
+}
+
+tasks.hivemqExtensionResources {
+    from("README.adoc") { rename { "README.txt" } }
+    from(tasks.asciidoctor)
+    exclude("**/.gitkeep")
 }
 
 
