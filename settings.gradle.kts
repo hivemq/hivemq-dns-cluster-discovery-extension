@@ -1,4 +1,4 @@
-rootProject.name = "hivemq-dns-cluster-discovery-extension"
+rootProject.name = "hivemq-dns-cluster-discovery"
 
 pluginManagement {
     repositories {
