@@ -106,6 +106,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         } catch (TimeoutException | InterruptedException e) {
             log.error("Timeout while getting other node addresses");
             dnsDiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            addressesCount.set(0);
         }
     }
 
@@ -152,6 +153,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         } catch (final ExecutionException ex) {
             log.error("Failed to resolve DNS record for address '{}'.", discoveryAddress, ex);
             dnsDiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            addressesCount.set(0);
         }
         return null;
     }
