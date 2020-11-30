@@ -139,7 +139,7 @@ All you have to do is create a service, as shown in {docker-swarm}[DNS discovery
 
 ==== Metrics
 
-The Dns Cluster discovery extension delivers a set of metrics, that can be used to monitor the behavior in a dashboard.
+The Dns Cluster discovery extension delivers a set of metrics that can be used to monitor the behavior in a dashboard.
 
 The following metrics are available:
 
