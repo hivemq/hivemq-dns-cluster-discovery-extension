@@ -149,7 +149,7 @@ com.hivemq.dns-cluster-discovery-extension.query.success.count
 com.hivemq.dns-cluster-discovery-extension.query.failed.count
 ----
 
-This gauge shows the currently found cluster member IP addresses that were received during the last dns query:
+This gauge shows the number of currently found cluster member IP addresses that were received during the last dns query:
 ----
 com.hivemq.dns-cluster-discovery-extension.resolved-addresses
 ----
@@ -167,4 +167,3 @@ If you want to contribute to HiveMQ DNS Cluster Discovery Extension, see the lin
 
 HiveMQ DNS Cluster Discovery Extension is licensed under the `APACHE LICENSE, VERSION 2.0`.
 A copy of the license can be found link:LICENSE.txt[here].
-
