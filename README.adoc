@@ -45,6 +45,23 @@ record for the usage as cluster node addresses
 for DNS resolution to complete
 |=======================================================================
 
+=== Metrics
+
+The Dns Cluster discovery extension delivers a set of metrics that can be used to monitor the behavior in a dashboard.
+
+The following metrics are available:
+
+These two counter metrics indicate a successful or failed dns query attempt in order to receive the IP addresses of cluster members:
+----
+com.hivemq.dns-cluster-discovery-extension.query.success.count
+com.hivemq.dns-cluster-discovery-extension.query.failed.count
+----
+
+This gauge shows the number of currently found cluster member IP addresses that were received during the last dns query:
+----
+com.hivemq.dns-cluster-discovery-extension.resolved-addresses
+----
+
 [[sample-dns-record]]
 ==== Sample DNS record
 
@@ -136,23 +153,6 @@ NOTE: The name will define the `service-name` of the resulting DNS record, which
 
 Docker swarm provides a DNS entry for service discovery by default.
 All you have to do is create a service, as shown in {docker-swarm}[DNS discovery image README^].
-
-==== Metrics
-
-The Dns Cluster discovery extension delivers a set of metrics that can be used to monitor the behavior in a dashboard.
-
-The following metrics are available:
-
-These two counter metrics indicate a successful or failed dns query attempt in order to receive the IP addresses of cluster members:
-----
-com.hivemq.dns-cluster-discovery-extension.query.success.count
-com.hivemq.dns-cluster-discovery-extension.query.failed.count
-----
-
-This gauge shows the number of currently found cluster member IP addresses that were received during the last dns query:
-----
-com.hivemq.dns-cluster-discovery-extension.resolved-addresses
-----
 
 ==== Need help?
 
