@@ -11,8 +11,8 @@ import com.hivemq.extension.sdk.api.annotations.NotNull;
  */
 public class DnsDiscoveryMetrics {
 
-    final static @NotNull String DNS_DISCOVERY_EXTENSION = "dns-cluster-discovery-extension";
-    final static @NotNull String HIVEMQ_PREFIX = "com.hivemq";
+    public final static @NotNull String DNS_DISCOVERY_EXTENSION = "dns-cluster-discovery-extension";
+    public final static @NotNull String HIVEMQ_PREFIX = "com.hivemq";
 
     private final @NotNull MetricRegistry metricRegistry;
     private final @NotNull Counter connectCounter;
