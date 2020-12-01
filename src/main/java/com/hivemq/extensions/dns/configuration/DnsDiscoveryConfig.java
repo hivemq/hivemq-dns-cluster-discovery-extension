@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.configuration;
+package com.hivemq.extensions.dns.configuration;
 
 import org.aeonbits.owner.Config;
 
 
 @Config.Sources("file:${configFile}")
 public interface DnsDiscoveryConfig extends Config {
+
+    @Key("dnsServerAddress")
+    String dnsServerAddress();
 
     @Key("discoveryAddress")
     String discoveryAddress();

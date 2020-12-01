@@ -1,13 +1,11 @@
-.idea
-hivemq-dns-cluster-discovery.iml
+# Gradle
+.gradle
+build/
 
-### Maven template
-target/
-dependency-reduced-pom.xml
-.mvn/timing.properties
+# IntelliJ
+out/
+*.iml
+.idea/*
 
-# Avoid ignoring Maven wrapper jar file (.jar files are usually ignored)
-!/.mvn/wrapper/maven-wrapper.jar
-
-
+.java-version
 .DS_Store

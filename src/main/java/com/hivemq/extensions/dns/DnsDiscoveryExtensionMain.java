@@ -14,41 +14,43 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions;
+package com.hivemq.extensions.dns;
 
 import com.hivemq.extension.sdk.api.ExtensionMain;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
-import com.hivemq.extensions.callbacks.DnsClusterDiscovery;
-import com.hivemq.extensions.configuration.ConfigurationReader;
-import com.hivemq.extensions.configuration.DnsDiscoveryConfigExtended;
+import com.hivemq.extensions.dns.callbacks.DnsClusterDiscovery;
+import com.hivemq.extensions.dns.configuration.ConfigurationReader;
+import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigExtended;
+import com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics;
 
 /**
  * This is the main class of the dns discovery extension, which is instantiated during the HiveMQ start up process.
  *
  * @author Anja Helmbrecht-Schaar
  */
-public class DnsDiscoveryExtensionMainClass implements ExtensionMain {
+public class DnsDiscoveryExtensionMain implements ExtensionMain {
 
-    private DnsClusterDiscovery dnsClusterDiscovery;
+    private @Nullable DnsClusterDiscovery dnsClusterDiscovery;
 
     @Override
-    public void extensionStart(
-            final @NotNull ExtensionStartInput extensionStartInput,
-            final @NotNull ExtensionStartOutput extensionStartOutput) {
-
+    public void extensionStart(final @NotNull ExtensionStartInput extensionStartInput,
+                               final @NotNull ExtensionStartOutput extensionStartOutput) {
         try {
             final ConfigurationReader configurationReader = new ConfigurationReader(extensionStartInput.getExtensionInformation());
             if (configurationReader.get() == null) {
                 extensionStartOutput.preventExtensionStartup("Unspecified error occurred while reading configuration");
                 return;
             }
+            final DnsDiscoveryMetrics metrics = new DnsDiscoveryMetrics(Services.metricRegistry());
+            final DnsDiscoveryConfigExtended configuration = new DnsDiscoveryConfigExtended(configurationReader);
 
-            dnsClusterDiscovery = new DnsClusterDiscovery(new DnsDiscoveryConfigExtended(configurationReader));
+            dnsClusterDiscovery = new DnsClusterDiscovery(configuration, metrics);
 
             try {
                 Services.clusterService().addDiscoveryCallback(dnsClusterDiscovery);
@@ -62,10 +64,8 @@ public class DnsDiscoveryExtensionMainClass implements ExtensionMain {
     }
 
     @Override
-    public void extensionStop(
-            final @NotNull ExtensionStopInput extensionStopInput,
-            final @NotNull ExtensionStopOutput extensionStopOutput) {
-
+    public void extensionStop(final @NotNull ExtensionStopInput extensionStopInput,
+                              final @NotNull ExtensionStopOutput extensionStopOutput) {
         if (dnsClusterDiscovery != null) {
             Services.clusterService().removeDiscoveryCallback(dnsClusterDiscovery);
         }

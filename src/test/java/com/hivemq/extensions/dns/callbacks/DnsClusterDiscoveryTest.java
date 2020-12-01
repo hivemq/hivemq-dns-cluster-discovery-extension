@@ -14,32 +14,39 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.callbacks;
+package com.hivemq.extensions.dns.callbacks;
 
+import com.codahale.metrics.Counter;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
+import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
-import com.hivemq.extensions.configuration.DnsDiscoveryConfigExtended;
-import org.junit.Before;
-import org.junit.Test;
+import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigExtended;
+import com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.when;
 import static org.mockito.MockitoAnnotations.initMocks;
 
 public class DnsClusterDiscoveryTest {
 
-    DnsClusterDiscovery dnsClusterDiscovery;
+    private final @NotNull ClusterNodeAddress cla = new ClusterNodeAddress("localhost", 1883);
+
+    private DnsClusterDiscovery dnsClusterDiscovery;
 
     @Mock
-    DnsDiscoveryConfigExtended configuration;
+    private DnsDiscoveryConfigExtended configuration;
 
-    ClusterNodeAddress cla = new ClusterNodeAddress("localhost", 1883);
+    @Mock
+    private DnsDiscoveryMetrics metrics;
+
 
     @NotNull
     ClusterDiscoveryInput input = new ClusterDiscoveryInput() {
@@ -67,9 +74,9 @@ public class DnsClusterDiscoveryTest {
         private String addresses;
 
         @Override
-        public void provideCurrentNodes(@NotNull List<ClusterNodeAddress> list) {
+        public void provideCurrentNodes(@Nullable List<ClusterNodeAddress> list) {
             if (list == null) {
-                list = new ArrayList<ClusterNodeAddress>();
+                list = new ArrayList<>();
             }
             list.add(cla);
             addresses = list.iterator().next().getHost();
@@ -78,25 +85,28 @@ public class DnsClusterDiscoveryTest {
         @Override
         public String toString() {
             return addresses;
-        }        @Override
+        }
+
+        @Override
         public void setReloadInterval(int i) {
             i = 1;
         }
-
-
     };
 
-    @Before
+    @BeforeEach
     public void setUp() {
         initMocks(this);
-        dnsClusterDiscovery = new DnsClusterDiscovery(configuration);
+        dnsClusterDiscovery = new DnsClusterDiscovery(configuration, metrics);
     }
 
     @Test
-    public void testDnsClusterDiscoverySingleNode() throws Exception {
-        final String discoveryAddress = "www.dc-square.de";
+    public void testDnsClusterDiscoverySingleNode() {
+        when(metrics.getResolutionRequestCounter()).thenReturn(new Counter());
+
+        final String discoveryAddress = "www.hivemq.com";
         final int discoveryTimeout = 30;
 
+        when(configuration.dnsServerAddress()).thenReturn(null);
         when(configuration.discoveryAddress()).thenReturn(discoveryAddress);
         when(configuration.resolutionTimeout()).thenReturn(discoveryTimeout);
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.hivemq.extensions.configuration;
+package com.hivemq.extensions.dns.configuration;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
@@ -35,9 +35,11 @@ import java.util.Properties;
  */
 public class ConfigurationReader {
 
-    static final String CONFIG_PATH = "dnsdiscovery.properties";
-    private static final Logger log = LoggerFactory.getLogger(ConfigurationReader.class);
-    private final File extensionHomeFolder;
+    private static final @NotNull Logger log = LoggerFactory.getLogger(ConfigurationReader.class);
+
+    static final @NotNull String CONFIG_PATH = "dnsdiscovery.properties";
+
+    private final @NotNull File extensionHomeFolder;
 
     public ConfigurationReader(final @NotNull ExtensionInformation extensionInformation) {
         this.extensionHomeFolder = extensionInformation.getExtensionHomeFolder();
@@ -49,13 +51,13 @@ public class ConfigurationReader {
      *
      * @return DnsDiscoveryConfig
      */
-    public DnsDiscoveryConfig get() {
+    public @NotNull DnsDiscoveryConfig get() {
         final File propertiesFile = new File(extensionHomeFolder, CONFIG_PATH);
         try (final InputStream inputStream = new FileInputStream(propertiesFile)) {
             final Properties properties = new Properties();
             properties.load(inputStream);
             return ConfigFactory.create(DnsDiscoveryConfig.class, properties);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             log.warn("No dnsdiscovery.properties file found. Use default settings");
             return ConfigFactory.create(DnsDiscoveryConfig.class);
         }
