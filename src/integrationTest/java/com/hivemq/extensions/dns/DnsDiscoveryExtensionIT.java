@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics.DNS_DISCOVERY_EXTENSION;
+import static com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics.HIVEMQ_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
@@ -47,7 +49,7 @@ public class DnsDiscoveryExtensionIT {
         testDnsServer.start();
 
         FileUtils.copyDirectory(new File("build/hivemq-extension-test"), extensionTempPath.toFile());
-        final Path extensionDir = extensionTempPath.resolve("hivemq-dns-cluster-discovery-extension");
+        final Path extensionDir = extensionTempPath.resolve("hivemq-dns-cluster-discovery");
 
         final String dnsConfigPath = "src/integrationTest/resources/dnsdiscovery.properties";
 
@@ -115,6 +117,11 @@ public class DnsDiscoveryExtensionIT {
                 Set.of("com_hivemq_dns_cluster_discovery_extension_query_success_count",
                         "com_hivemq_dns_cluster_discovery_extension_query_failed_count",
                         "com_hivemq_dns_cluster_discovery_extension_resolved_addresses"));
+
+        final String successMetricName = HIVEMQ_PREFIX + "." +  DNS_DISCOVERY_EXTENSION + "." +  "query.success.count";
+        final String failedMetricName = HIVEMQ_PREFIX + "." +  DNS_DISCOVERY_EXTENSION + "." + "query.failed.count";
+
+
 
         if (type == MetricType.SUCCESS_METRIC) {
             return metricsWithValues.get("com_hivemq_dns_cluster_discovery_extension_query_success_count");

@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import static com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics.DNS_DISCOVERY_EXTENSION;
+import static com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics.HIVEMQ_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DnsDiscoveryMetricsTest {
@@ -26,10 +28,8 @@ class DnsDiscoveryMetricsTest {
     public void test_resolutionRequestCounter() {
         final Counter counter = metrics.getResolutionRequestCounter();
         counter.inc();
-
-        final Counter counterFromRegistry = metricRegistry.counter("com.hivemq.dns-cluster-discovery-extension.resolution-request-success.count");
-
-
+        String name = HIVEMQ_PREFIX + "." +  DNS_DISCOVERY_EXTENSION + "." +  "query.success.count";
+        final Counter counterFromRegistry = metricRegistry.counter(name);
         assertEquals(counter.getCount(), counterFromRegistry.getCount());
     }
 
@@ -37,10 +37,8 @@ class DnsDiscoveryMetricsTest {
     public void test_resolutionRequestCounterFailed() {
         final Counter counter = metrics.getResolutionRequestFailedCounter();
         counter.inc();
-
-        final Counter counterFromRegistry = metricRegistry.counter("com.hivemq.dns-cluster-discovery-extension.resolution-request-failed.count");
-
-
+        String name = HIVEMQ_PREFIX + "." +  DNS_DISCOVERY_EXTENSION + "." + "query.failed.count";
+        final Counter counterFromRegistry = metricRegistry.counter(name);
         assertEquals(counter.getCount(), counterFromRegistry.getCount());
     }
 
@@ -54,7 +52,8 @@ class DnsDiscoveryMetricsTest {
 
         metrics.registerAddressCountGauge(addressesCount::get);
 
-        final Gauge<Integer> gauge = metricRegistry.getGauges().get("com.hivemq.dns-cluster-discovery-extension.resolved-addresses.gauge");
+        String name = HIVEMQ_PREFIX + "." +  DNS_DISCOVERY_EXTENSION + "." + "resolved-addresses";
+        final Gauge<Integer> gauge = metricRegistry.getGauges().get(name);
 
         assertEquals(addresses.size(), gauge.getValue());
 
