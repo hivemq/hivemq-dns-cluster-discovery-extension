@@ -12,7 +12,7 @@ group = "com.hivemq.extensions"
 description = "Cluster discovery extension using round-robin DNS A records"
 
 hivemqExtension {
-    name = "HiveMQ DNS Cluster Discovery Extension"
+    name = "DNS Cluster Discovery Extension"
     author = "HiveMQ"
     priority = 1000
     startPriority = 10000
