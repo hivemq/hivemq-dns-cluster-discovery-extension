@@ -4,7 +4,7 @@
 :dns-discovery-image: https://github.com/hivemq/hivemq4-docker-images#dns-discovery-image
 :hivemq-docker-image: https://github.com/hivemq/hivemq4-docker-images
 
-== HiveMQ DNS Cluster discovery extension
+= HiveMQ DNS Cluster discovery extension
 
 *Extension Type*: Integration
 
@@ -12,7 +12,7 @@
 
 *License*: Apache License 2.0
 
-=== Purpose
+== Purpose
 
 This HiveMQ extension enables you to operate elastic HiveMQ clusters with an container orchestration platform (Kubernetes, Openshift) as well as cloud environments.
 DNS is used as cluster discovery mechanism, which is ideal for environments that scale dynamically.
@@ -20,12 +20,12 @@ HiveMQ instances are added and removed at runtime as soon as they become availab
 
 This extension can be used with any cloud environment / container orchestration environment that supports service discovery using a {round-robin}[round-robin^] DNS A record.
 
-=== Installation
+== Installation
 
 The extension must be unzipped and the complete extension folder must be placed into the extensions folder.
 After this adapt the properties to your needs as described in the Configuration chapter.
 
-=== Configuration
+== Configuration
 
 The following environment variables or property keys should be used to customize the discovery parameters.
 
@@ -45,7 +45,7 @@ record for the usage as cluster node addresses
 for DNS resolution to complete
 |=======================================================================
 
-=== Metrics
+== Metrics
 
 The Dns Cluster discovery extension delivers a set of metrics that can be used to monitor the behavior in a dashboard.
 
@@ -63,7 +63,7 @@ com.hivemq.dns-cluster-discovery-extension.resolved-addresses
 ----
 
 [[sample-dns-record]]
-==== Sample DNS record
+== Sample DNS record
 
 The following list shows a sample round-robin A-record as expected and parsed by the extension:
 
@@ -90,7 +90,7 @@ tasks.hivemq.       600 IN  A   10.0.0.3
 This record represents a 5 node cluster on an overlay network.
 
 [[first-steps]]
-=== First steps
+== First steps
 
 This diagram shows how DNS discovery is generally implemented on container engines.
 
@@ -106,7 +106,7 @@ The DNS server responds with a predefined record which is created by the orchest
 The record contains the list of containers/pods in the cluster, which HiveMQ will then use to discover the other nodes.
 
 [[usage]]
-==== Container environment usage
+== Container environment usage
 
 Most container orchestration environments support this type of discovery.
 See the following list for some examples:
@@ -123,7 +123,7 @@ To implement your own solution for this discovery method, you must either provid
 * a custom DNS record on your cloud provider's DNS service containing the addresses of your HiveMQ instances.
 * an alternative DNS server included with the deployment, serving general DNS to the HiveMQ instances as well as providing a service discovery record.
 
-===== Kubernetes
+=== Kubernetes
 
 To use DNS discovery on Kubernetes, you will generally need a headless service pointing to the HiveMQ deployment, similar to the following configuration:
 
@@ -149,21 +149,21 @@ The selector defines which pods are listed in the resulting DNS record.
 
 NOTE: The name will define the `service-name` of the resulting DNS record, which will be generally in the form of `<service-name>.<kubernetes-namespace>.svc.<dns-domain>`.
 
-==== Docker Swarm
+=== Docker Swarm
 
 Docker swarm provides a DNS entry for service discovery by default.
 All you have to do is create a service, as shown in {docker-swarm}[DNS discovery image README^].
 
-==== Need help?
+== Need Help?
 
 If you encounter any problems, we are happy to help.
 The best place to get in contact is our {hivemq-support}[support^].
 
-= Contributing
+== Contributing
 
 If you want to contribute to HiveMQ DNS Cluster Discovery Extension, see the link:../../CONTRIBUTING.md[contribution guidelines].
 
-= License
+== License
 
 HiveMQ DNS Cluster Discovery Extension is licensed under the `APACHE LICENSE, VERSION 2.0`.
 A copy of the license can be found link:LICENSE.txt[here].
