@@ -1,10 +1,11 @@
-:hivemq-support: http://www.hivemq.com/support/
+:hivemq-link: https://www.hivemq.com
+:hivemq-support: {hivemq-link}/support/
 :round-robin: https://en.wikipedia.org/wiki/Round-robin_DNS
 :docker-swarm: https://github.com/hivemq/hivemq4-docker-images#docker-swarm
 :dns-discovery-image: https://github.com/hivemq/hivemq4-docker-images#dns-discovery-image
 :hivemq-docker-image: https://github.com/hivemq/hivemq4-docker-images
 
-= HiveMQ DNS Cluster discovery extension
+= HiveMQ DNS Cluster Discovery Extension
 
 *Extension Type*: Integration
 
@@ -63,7 +64,7 @@ com.hivemq.dns-cluster-discovery-extension.resolved-addresses
 ----
 
 [[sample-dns-record]]
-== Sample DNS record
+== Sample DNS Record
 
 The following list shows a sample round-robin A-record as expected and parsed by the extension:
 
@@ -90,7 +91,7 @@ tasks.hivemq.       600 IN  A   10.0.0.3
 This record represents a 5 node cluster on an overlay network.
 
 [[first-steps]]
-== First steps
+== First Steps
 
 This diagram shows how DNS discovery is generally implemented on container engines.
 
@@ -106,7 +107,7 @@ The DNS server responds with a predefined record which is created by the orchest
 The record contains the list of containers/pods in the cluster, which HiveMQ will then use to discover the other nodes.
 
 [[usage]]
-== Container environment usage
+== Container Environment Usage
 
 Most container orchestration environments support this type of discovery.
 See the following list for some examples:
@@ -157,11 +158,11 @@ All you have to do is create a service, as shown in {docker-swarm}[DNS discovery
 == Need Help?
 
 If you encounter any problems, we are happy to help.
-The best place to get in contact is our {hivemq-support}[support^].
+The best place to get in contact is our {hivemq-support}[support].
 
 == Contributing
 
-If you want to contribute to HiveMQ DNS Cluster Discovery Extension, see the link:../../CONTRIBUTING.md[contribution guidelines].
+If you want to contribute to HiveMQ DNS Cluster Discovery Extension, see the link:CONTRIBUTING.md[contribution guidelines].
 
 == License
 
