@@ -16,7 +16,6 @@ hivemqExtension {
     author = "HiveMQ"
     priority = 1000
     startPriority = 10000
-    mainClass = "com.hivemq.extensions.dns.DnsDiscoveryExtensionMain"
     sdkVersion = "${property("hivemq-extension-sdk.version")}"
 }
 
