@@ -46,7 +46,7 @@ tasks.asciidoctor {
 }
 
 tasks.hivemqExtensionResources {
-    from("LICENSE.txt")
+    from("LICENSE")
     from("README.adoc") { rename { "README.txt" } }
     from("dns-discovery-diagram.png")
     from(tasks.asciidoctor)
