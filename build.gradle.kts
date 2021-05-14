@@ -5,7 +5,6 @@ plugins {
     id("org.asciidoctor.jvm.convert")
 }
 
-
 /* ******************** metadata ******************** */
 
 group = "com.hivemq.extensions"
@@ -19,7 +18,6 @@ hivemqExtension {
     sdkVersion = "${property("hivemq-extension-sdk.version")}"
 }
 
-
 /* ******************** dependencies ******************** */
 
 repositories {
@@ -31,7 +29,6 @@ dependencies {
     implementation("io.netty:netty-resolver-dns:${property("netty.version")}")
     implementation("commons-validator:commons-validator:${property("commons-validator.version")}")
 }
-
 
 /* ******************** resources ******************** */
 
@@ -51,7 +48,6 @@ tasks.hivemqExtensionResources {
     from(tasks.asciidoctor)
 }
 
-
 /* ******************** test ******************** */
 
 dependencies {
@@ -61,7 +57,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
 }
 
-tasks.withType<Test>().configureEach {
+tasks.withType<Test> {
     useJUnitPlatform()
 
     testLogging {
@@ -69,25 +65,24 @@ tasks.withType<Test>().configureEach {
     }
 }
 
-
 /* ******************** integration test ******************** */
 
-sourceSets {
-    create("integrationTest") {
-        compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-        runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-    }
+sourceSets.create("integrationTest") {
+    compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+    runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
 }
 
-configurations {
-    getByName("integrationTestImplementation").extendsFrom(testImplementation.get())
-    getByName("integrationTestRuntimeOnly").extendsFrom(testRuntimeOnly.get())
+val integrationTestImplementation: Configuration by configurations.getting {
+    extendsFrom(configurations.testImplementation.get())
+}
+val integrationTestRuntimeOnly: Configuration by configurations.getting {
+    extendsFrom(configurations.testRuntimeOnly.get())
 }
 
 dependencies {
-    "integrationTestImplementation"("org.testcontainers:testcontainers:${property("testcontainers.version")}")
-    "integrationTestImplementation"("com.hivemq:hivemq-testcontainer-junit5:${property("hivemq-testcontainer.version")}")
-    "integrationTestImplementation"("org.apache.directory.server:apacheds-protocol-dns:${property("apache-dns.version")}")
+    integrationTestImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
+    integrationTestImplementation("com.hivemq:hivemq-testcontainer-junit5:${property("hivemq-testcontainer.version")}")
+    integrationTestImplementation("org.apache.directory.server:apacheds-protocol-dns:${property("apache-dns.version")}")
 }
 
 val prepareExtensionTest by tasks.registering(Sync::class) {
@@ -109,7 +104,6 @@ val integrationTest by tasks.registering(Test::class) {
 }
 
 tasks.check { dependsOn(integrationTest) }
-
 
 /* ******************** checks ******************** */
 
