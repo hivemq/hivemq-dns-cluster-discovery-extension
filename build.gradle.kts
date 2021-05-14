@@ -52,8 +52,7 @@ tasks.hivemqExtensionResources {
 
 dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit-jupiter.version")}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine:${property("junit-jupiter.version")}")
-
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
 }
 
@@ -68,8 +67,8 @@ tasks.withType<Test> {
 /* ******************** integration test ******************** */
 
 sourceSets.create("integrationTest") {
-    compileClasspath += sourceSets.main.get().output + sourceSets.test.get().output
-    runtimeClasspath += sourceSets.main.get().output + sourceSets.test.get().output
+    compileClasspath += sourceSets.main.get().output
+    runtimeClasspath += sourceSets.main.get().output
 }
 
 val integrationTestImplementation: Configuration by configurations.getting {
@@ -97,8 +96,8 @@ val integrationTest by tasks.registering(Test::class) {
     group = "verification"
     description = "Runs integration tests."
 
-    testClassesDirs = sourceSets["integrationTest"].output.classesDirs
-    classpath = sourceSets["integrationTest"].runtimeClasspath
+    testClassesDirs = sourceSets[name].output.classesDirs
+    classpath = sourceSets[name].runtimeClasspath
     shouldRunAfter(tasks.test)
     dependsOn(prepareExtensionTest)
 }
