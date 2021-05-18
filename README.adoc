@@ -1,9 +1,9 @@
 :hivemq-link: https://www.hivemq.com
 :hivemq-support: {hivemq-link}/support/
 :round-robin: https://en.wikipedia.org/wiki/Round-robin_DNS
-:docker-swarm: https://github.com/hivemq/hivemq4-docker-images#docker-swarm
-:dns-discovery-image: https://github.com/hivemq/hivemq4-docker-images#dns-discovery-image
 :hivemq-docker-image: https://github.com/hivemq/hivemq4-docker-images
+:dns-discovery-image: {hivemq-docker-image}#hivemq-dns-discovery-image
+:docker-swarm: {hivemq-docker-image}#local-cluster-with-docker-swarm
 
 = HiveMQ DNS Cluster Discovery Extension
 
@@ -95,7 +95,7 @@ This record represents a 5 node cluster on an overlay network.
 
 This diagram shows how DNS discovery is generally implemented on container engines.
 
-The components differ when using DNS discovery outside of container engine.
+The components differ when using DNS discovery outside of container engines.
 When using it in conjunction with DNSaaS solutions for example, the DNS entries will be created by the orchestration solution used instead.
 
 image::dns-discovery-diagram.png[DNS discovery visualized]
@@ -153,7 +153,7 @@ NOTE: The name will define the `service-name` of the resulting DNS record, which
 === Docker Swarm
 
 Docker swarm provides a DNS entry for service discovery by default.
-All you have to do is create a service, as shown in {docker-swarm}[DNS discovery image README^].
+All you have to do is create a service, as shown in the {docker-swarm}[DNS discovery image README^].
 
 == Need Help?
 
