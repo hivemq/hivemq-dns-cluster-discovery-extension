@@ -11,11 +11,11 @@ group = "com.hivemq.extensions"
 description = "Cluster discovery extension using round-robin DNS A records"
 
 hivemqExtension {
-    name = "DNS Cluster Discovery Extension"
-    author = "HiveMQ"
-    priority = 1000
-    startPriority = 10000
-    sdkVersion = "${property("hivemq-extension-sdk.version")}"
+    name.set("DNS Cluster Discovery Extension")
+    author.set("HiveMQ")
+    priority.set(1000)
+    startPriority.set(10000)
+    sdkVersion.set("${property("hivemq-extension-sdk.version")}")
 }
 
 /* ******************** dependencies ******************** */
@@ -41,7 +41,7 @@ tasks.asciidoctor {
     sourceDir(prepareAsciidoc.map { it.destinationDir })
 }
 
-tasks.hivemqExtensionResources {
+hivemqExtension.resources {
     from("LICENSE")
     from("README.adoc") { rename { "README.txt" } }
     from("dns-discovery-diagram.png")
@@ -56,7 +56,7 @@ dependencies {
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
 }
 
-tasks.withType<Test> {
+tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
     testLogging {
@@ -66,43 +66,11 @@ tasks.withType<Test> {
 
 /* ******************** integration test ******************** */
 
-sourceSets.create("integrationTest") {
-    compileClasspath += sourceSets.main.get().output
-    runtimeClasspath += sourceSets.main.get().output
-}
-
-val integrationTestImplementation: Configuration by configurations.getting {
-    extendsFrom(configurations.testImplementation.get())
-}
-val integrationTestRuntimeOnly: Configuration by configurations.getting {
-    extendsFrom(configurations.testRuntimeOnly.get())
-}
-
 dependencies {
     integrationTestImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
     integrationTestImplementation("com.hivemq:hivemq-testcontainer-junit5:${property("hivemq-testcontainer.version")}")
     integrationTestImplementation("org.apache.directory.server:apacheds-protocol-dns:${property("apache-dns.version")}")
 }
-
-val prepareExtensionTest by tasks.registering(Sync::class) {
-    group = "hivemq extension"
-    description = "Prepares the extension for integration testing."
-
-    from(tasks.hivemqExtensionZip.map { zipTree(it.archiveFile) })
-    into(buildDir.resolve("hivemq-extension-test"))
-}
-
-val integrationTest by tasks.registering(Test::class) {
-    group = "verification"
-    description = "Runs integration tests."
-
-    testClassesDirs = sourceSets[name].output.classesDirs
-    classpath = sourceSets[name].runtimeClasspath
-    shouldRunAfter(tasks.test)
-    dependsOn(prepareExtensionTest)
-}
-
-tasks.check { dependsOn(integrationTest) }
 
 /* ******************** checks ******************** */
 
