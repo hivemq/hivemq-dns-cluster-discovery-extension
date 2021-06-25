@@ -5,8 +5,6 @@ plugins {
     id("org.asciidoctor.jvm.convert")
 }
 
-/* ******************** metadata ******************** */
-
 group = "com.hivemq.extensions"
 description = "Cluster discovery extension using round-robin DNS A records"
 
@@ -16,12 +14,6 @@ hivemqExtension {
     priority.set(1000)
     startPriority.set(10000)
     sdkVersion.set("${property("hivemq-extension-sdk.version")}")
-}
-
-/* ******************** dependencies ******************** */
-
-repositories {
-    mavenCentral()
 }
 
 dependencies {
