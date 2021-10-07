@@ -36,6 +36,7 @@ public class DnsDiscoveryConfigExtended {
     private static final String DNS_SERVER_ADDRESS = "HIVEMQ_DNS_SERVER_ADDRESS";
     private static final String DISCOVERY_ADDRESS_ENV = "HIVEMQ_DNS_DISCOVERY_ADDRESS";
     private static final String DISCOVERY_TIMEOUT_ENV = "HIVEMQ_DNS_DISCOVERY_TIMEOUT";
+    private static final String DISCOVERY_RELOAD_INTERVAL_ENV = "HIVEMQ_DNS_RELOAD_INTERVAL";
 
     private final DnsDiscoveryConfig dnsDiscoveryConfig;
 
@@ -133,5 +134,26 @@ public class DnsDiscoveryConfigExtended {
             }
         }
         return dnsDiscoveryConfig.resolutionTimeout();
+    }
+
+    /**
+     * method to get the discovery reload interval
+     * either from environment variable
+     * or from properties configuration
+     * or default setting
+     *
+     * @return int - the resolution timeout
+     */
+    public int reloadInterval() {
+        final @Nullable String reloadInterval = System.getenv(DISCOVERY_RELOAD_INTERVAL_ENV);
+
+        if (reloadInterval != null && !reloadInterval.isBlank()) {
+            try {
+                return Integer.parseInt(reloadInterval);
+            } catch (final NumberFormatException e) {
+                log.error("Reload interval from env {} couldn't be parsed to int. Fallback to config value.", DISCOVERY_RELOAD_INTERVAL_ENV);
+            }
+        }
+        return dnsDiscoveryConfig.reloadInterval();
     }
 }

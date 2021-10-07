@@ -30,4 +30,8 @@ public interface DnsDiscoveryConfig extends Config {
     @Key("resolutionTimeout")
     @DefaultValue("30")
     int resolutionTimeout();
+
+    @Key("reloadInterval")
+    @DefaultValue("30")
+    int reloadInterval();
 }

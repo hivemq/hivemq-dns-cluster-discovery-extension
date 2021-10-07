@@ -93,7 +93,29 @@ public class ConfigurationReaderTest {
                 throw e;
             }
         });
+    }
+
+    @Test
+    public void test_typo_reloadInterval(final @NotNull @TempDir Path tempDir) throws Exception {
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toAbsolutePath().toFile());
+
+        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+
+        Files.writeString(tempDir.resolve(ConfigurationReader.CONFIG_PATH),
+                "discoveryAddress:\n" + "reloadInterval:30Seconds",
+                StandardOpenOption.CREATE);
+
+        assertThrows(UnsupportedOperationException.class, () -> {
+            try {
+                configurationReader.get();
+                assertEquals(configurationReader.get().reloadInterval(), defaultConfig.resolutionTimeout());
+            } catch (UnsupportedOperationException e) {
+                assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
+                throw e;
+            }
+        });
 
     }
+
 
 }
