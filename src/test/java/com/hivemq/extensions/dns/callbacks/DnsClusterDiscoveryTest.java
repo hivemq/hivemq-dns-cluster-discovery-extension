@@ -104,10 +104,12 @@ public class DnsClusterDiscoveryTest {
 
         final String discoveryAddress = "www.hivemq.com";
         final int discoveryTimeout = 30;
+        final int reloadInterval = 60;
 
         when(configuration.dnsServerAddress()).thenReturn(null);
         when(configuration.discoveryAddress()).thenReturn(discoveryAddress);
         when(configuration.resolutionTimeout()).thenReturn(discoveryTimeout);
+        when(configuration.reloadInterval()).thenReturn(reloadInterval);
 
         dnsClusterDiscovery.init(input, output);
         dnsClusterDiscovery.reload(input, output);

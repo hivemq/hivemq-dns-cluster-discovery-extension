@@ -80,6 +80,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
                      final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         ownAddress = clusterDiscoveryInput.getOwnAddress();
+        clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.reloadInterval());
         loadClusterNodeAddresses(clusterDiscoveryOutput);
     }
 
@@ -87,6 +88,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
                        final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         loadClusterNodeAddresses(clusterDiscoveryOutput);
+        clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.reloadInterval());
     }
 
     @Override
