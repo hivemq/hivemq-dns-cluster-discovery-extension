@@ -130,7 +130,7 @@ public class DnsDiscoveryConfigExtended {
             try {
                 return Integer.parseInt(resolveTimeout);
             } catch (final NumberFormatException e) {
-                log.error("Resolution timeout from env {} couldn't be parsed to int. Fallback to config value.", DISCOVERY_TIMEOUT_ENV);
+                log.error("Resolution timeout from env {} could not be parsed to int. Fallback to configuration value 'resolutionTimeout'.", DISCOVERY_TIMEOUT_ENV);
             }
         }
         return dnsDiscoveryConfig.resolutionTimeout();
@@ -151,7 +151,7 @@ public class DnsDiscoveryConfigExtended {
             try {
                 return Integer.parseInt(reloadInterval);
             } catch (final NumberFormatException e) {
-                log.error("Reload interval from env {} couldn't be parsed to int. Fallback to config value.", DISCOVERY_RELOAD_INTERVAL_ENV);
+                log.error("Reload interval from env {} could not be parsed to int. Fallback to configuration value 'reloadInterval'.", DISCOVERY_RELOAD_INTERVAL_ENV);
             }
         }
         return dnsDiscoveryConfig.reloadInterval();
