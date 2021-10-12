@@ -83,9 +83,8 @@ public class DnsDiscoveryExtensionIT {
                 //.withEnv("HIVEMQ_CLUSTER_TRANSPORT_TYPE", "TCP")
                 .withNetworkAliases("node1")
                 .withExposedPorts(9399)
-                .waitingFor(
-                        Wait.forLogMessage(".*Started HiveMQ in.*\\n", 1)
-                );
+                .waitForExtension("Prometheus Monitoring Extension")
+                .waitForExtension("DNS Cluster Discovery Extension");
     }
 
 
