@@ -47,6 +47,7 @@ import static com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics.DNS_DISCOVER
 import static com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics.HIVEMQ_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.testcontainers.shaded.org.awaitility.Awaitility.await;
 
 /**
  * @author Lukas Brand
@@ -90,25 +91,25 @@ public class DnsDiscoveryExtensionIT {
 
     @Test
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
-    void test_metric_success() throws IOException, InterruptedException {
+    void test_metric_success() {
         node1.start();
 
-        assertEquals(1, getMetricValue(MetricType.SUCCESS_METRIC));
-        assertEquals(0, getMetricValue(MetricType.FAILURE_METRIC));
-        assertEquals(4, getMetricValue(MetricType.IP_COUNT_METRIC));
+        await().until(() -> getMetricValue(MetricType.SUCCESS_METRIC) == 1);
+        await().until(() -> getMetricValue(MetricType.FAILURE_METRIC) == 0);
+        await().until(() -> getMetricValue(MetricType.IP_COUNT_METRIC) == 4);
 
 
     }
 
     @Test
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
-    void test_metric_failure() throws IOException {
+    void test_metric_failure() {
         testDnsServer.stop();
         node1.start();
 
-        assertEquals(0, getMetricValue(MetricType.SUCCESS_METRIC));
-        assertEquals(1, getMetricValue(MetricType.FAILURE_METRIC));
-        assertEquals(0, getMetricValue(MetricType.IP_COUNT_METRIC));
+        await().until(() -> getMetricValue(MetricType.SUCCESS_METRIC) == 0);
+        await().until(() -> getMetricValue(MetricType.FAILURE_METRIC) == 1);
+        await().until(() -> getMetricValue(MetricType.IP_COUNT_METRIC) == 0);
     }
 
 
@@ -133,11 +134,6 @@ public class DnsDiscoveryExtensionIT {
                 Set.of("com_hivemq_dns_cluster_discovery_extension_query_success_count",
                         "com_hivemq_dns_cluster_discovery_extension_query_failed_count",
                         "com_hivemq_dns_cluster_discovery_extension_resolved_addresses"));
-
-        final String successMetricName = HIVEMQ_PREFIX + "." +  DNS_DISCOVERY_EXTENSION + "." +  "query.success.count";
-        final String failedMetricName = HIVEMQ_PREFIX + "." +  DNS_DISCOVERY_EXTENSION + "." + "query.failed.count";
-
-
 
         if (type == MetricType.SUCCESS_METRIC) {
             return metricsWithValues.get("com_hivemq_dns_cluster_discovery_extension_query_success_count");

@@ -46,6 +46,7 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit-jupiter.version")}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
+    testImplementation("org.awaitility:awaitility:${property("awaitility.version")}")
 }
 
 tasks.withType<Test>().configureEach {
