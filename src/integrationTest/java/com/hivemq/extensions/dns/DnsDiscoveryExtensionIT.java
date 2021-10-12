@@ -29,6 +29,8 @@ import org.testcontainers.shaded.okhttp3.OkHttpClient;
 import org.testcontainers.shaded.okhttp3.Request;
 import org.testcontainers.shaded.okhttp3.Response;
 import org.testcontainers.shaded.org.apache.commons.io.FileUtils;
+import org.testcontainers.utility.DockerImageName;
+import org.testcontainers.utility.MountableFile;
 
 import java.io.File;
 import java.io.IOException;
@@ -73,10 +75,10 @@ public class DnsDiscoveryExtensionIT {
                 .replace("discoveryPlaceholder", "tasks.hivemq");
         Files.writeString(extensionDir.resolve("dnsdiscovery.properties"), replacedConfig, StandardOpenOption.CREATE);
 
-        node1 = new HiveMQTestContainerExtension("hivemq/hivemq4", "latest")
-                .withHiveMQConfig(new File("src/integrationTest/resources/config.xml"))
-                .withExtension(extensionDir.toFile())
-                .withExtension(new File("src/integrationTest/resources/hivemq-prometheus-extension"))
+        node1 = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq4").withTag("latest"))
+                .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
+                .withExtension(MountableFile.forHostPath(extensionDir))
+                .withExtension(MountableFile.forClasspathResource("hivemq-prometheus-extension"))
                 .withNetwork(network)
                 //.withEnv("HIVEMQ_CLUSTER_TRANSPORT_TYPE", "TCP")
                 .withNetworkAliases("node1")
