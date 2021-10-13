@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
     id("com.hivemq.extension")
     id("com.github.hierynomus.license")
@@ -53,8 +56,29 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
     testLogging {
-        events("STARTED", "FAILED", "SKIPPED")
+        events = setOf(TestLogEvent.STARTED, TestLogEvent.FAILED)
+        exceptionFormat = TestExceptionFormat.FULL
     }
+
+    val outputCache = mutableListOf<String>()
+    addTestOutputListener { _, outputEvent ->
+        outputCache.add(outputEvent.message)
+        while (outputCache.size > 1000) {
+            outputCache.removeAt(0)
+        }
+    }
+    addTestListener(object : TestListener {
+        override fun beforeSuite(suite: TestDescriptor) {}
+        override fun afterSuite(suite: TestDescriptor, result: TestResult) {}
+        override fun beforeTest(testDescriptor: TestDescriptor) = outputCache.clear()
+        override fun afterTest(testDescriptor: TestDescriptor, result: TestResult) {
+            if (result.resultType == TestResult.ResultType.FAILURE && outputCache.size > 0) {
+                println()
+                println(" Output of ${testDescriptor.className}.${testDescriptor.name}:")
+                outputCache.forEach { print(" > $it") }
+            }
+        }
+    })
 }
 
 /* ******************** integration test ******************** */
