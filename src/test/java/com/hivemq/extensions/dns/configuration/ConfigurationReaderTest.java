@@ -20,102 +20,60 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.mockito.Mock;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
 
-public class ConfigurationReaderTest {
+class ConfigurationReaderTest {
 
-    @Mock
-    DnsDiscoveryConfigExtended defaultConfig;
-
-    @Mock
-    private ExtensionInformation extensionInformation;
-
+    private @NotNull ConfigurationReader configurationReader;
+    private @NotNull Path configPath;
 
     @BeforeEach
-    public void init() {
-        initMocks(this);
-        when(defaultConfig.resolutionTimeout()).thenReturn(30);
-        when(defaultConfig.discoveryAddress()).thenReturn("");
-
-    }
-
-
-    @Test
-    public void test_ReadConfiguration_no_file_use_Defaults(final @NotNull @TempDir Path tempDir) {
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toAbsolutePath().toFile());
-
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-
-        assertEquals(configurationReader.get().resolutionTimeout(), defaultConfig.resolutionTimeout());
-        assertNull(configurationReader.get().discoveryAddress());
+    void setUp(final @TempDir @NotNull Path tempDir) {
+        final ExtensionInformation extensionInformation = mock(ExtensionInformation.class);
+        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toFile());
+        configurationReader = new ConfigurationReader(extensionInformation);
+        configPath = tempDir.resolve(ConfigurationReader.CONFIG_PATH);
     }
 
     @Test
-    public void test_successfully_read_config(final @NotNull @TempDir Path tempDir) throws Exception {
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toAbsolutePath().toFile());
-        Files.writeString(tempDir.resolve(ConfigurationReader.CONFIG_PATH),
-                "discoveryAddress:task.hivemq\n" + "resolutionTimeout:10",
-                StandardOpenOption.CREATE);
+    void whenNoFile_thenUseDefaults() {
+        final DnsDiscoveryConfig config = configurationReader.get();
 
-
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-        configurationReader.get();
-
-        assertEquals(10, configurationReader.get().resolutionTimeout());
-        assertEquals("task.hivemq", configurationReader.get().discoveryAddress());
-
+        assertEquals(30, config.resolutionTimeout());
+        assertNull(config.discoveryAddress());
     }
 
     @Test
-    public void test_typo_resolutionTimeOut(final @NotNull @TempDir Path tempDir) throws Exception {
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toAbsolutePath().toFile());
+    void whenConfigIsCorrect_thenUseValues() throws Exception {
+        Files.writeString(configPath, "discoveryAddress:task.hivemq\nresolutionTimeout:10");
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
+        final DnsDiscoveryConfig config = configurationReader.get();
 
-        Files.writeString(tempDir.resolve(ConfigurationReader.CONFIG_PATH),
-                "discoveryAddress:\n" + "resolutionTimeout:30Seconds",
-                StandardOpenOption.CREATE);
-
-        assertThrows(UnsupportedOperationException.class, () -> {
-            try {
-                configurationReader.get();
-                assertEquals(configurationReader.get().resolutionTimeout(), defaultConfig.resolutionTimeout());
-            } catch (UnsupportedOperationException e) {
-                assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
-                throw e;
-            }
-        });
+        assertEquals(10, config.resolutionTimeout());
+        assertEquals("task.hivemq", config.discoveryAddress());
     }
 
     @Test
-    public void test_typo_reloadInterval(final @NotNull @TempDir Path tempDir) throws Exception {
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toAbsolutePath().toFile());
+    void whenTypoInResolutionTimeout_thenThrowException() throws Exception {
+        Files.writeString(configPath, "discoveryAddress:\nresolutionTimeout:30Seconds");
 
-        final ConfigurationReader configurationReader = new ConfigurationReader(extensionInformation);
-
-        Files.writeString(tempDir.resolve(ConfigurationReader.CONFIG_PATH),
-                "discoveryAddress:\n" + "reloadInterval:30Seconds",
-                StandardOpenOption.CREATE);
-
-        assertThrows(UnsupportedOperationException.class, () -> {
-            try {
-                configurationReader.get();
-                assertEquals(configurationReader.get().reloadInterval(), defaultConfig.resolutionTimeout());
-            } catch (UnsupportedOperationException e) {
-                assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
-                throw e;
-            }
-        });
-
+        final UnsupportedOperationException e =
+                assertThrows(UnsupportedOperationException.class, () -> configurationReader.get().resolutionTimeout());
+        assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
     }
 
+    @Test
+    void whenTypoInReloadInterval_thenThrowException() throws Exception {
+        Files.writeString(configPath, "discoveryAddress:\nreloadInterval:30Seconds");
 
+        final UnsupportedOperationException e =
+                assertThrows(UnsupportedOperationException.class, () -> configurationReader.get().reloadInterval());
+        assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
+    }
 }
