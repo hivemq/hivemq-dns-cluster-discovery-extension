@@ -17,7 +17,6 @@ package com.hivemq.extensions.dns.callbacks;
 
 import com.codahale.metrics.Counter;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
@@ -25,97 +24,50 @@ import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigExtended;
 import com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
+import org.mockito.ArgumentCaptor;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.initMocks;
+import static org.mockito.Mockito.*;
 
-public class DnsClusterDiscoveryTest {
+class DnsClusterDiscoveryTest {
 
     private final @NotNull ClusterNodeAddress cla = new ClusterNodeAddress("localhost", 1883);
 
-    private DnsClusterDiscovery dnsClusterDiscovery;
-
-    @Mock
-    private DnsDiscoveryConfigExtended configuration;
-
-    @Mock
-    private DnsDiscoveryMetrics metrics;
-
-
-    @NotNull
-    ClusterDiscoveryInput input = new ClusterDiscoveryInput() {
-        @Override
-        public @NotNull
-        ClusterNodeAddress getOwnAddress() {
-            return cla;
-        }
-
-        @Override
-        public @NotNull
-        String getOwnClusterId() {
-            return "123";
-        }
-
-        @Override
-        public int getReloadInterval() {
-            return 1;
-        }
-    };
-
-    @NotNull
-    ClusterDiscoveryOutput output = new ClusterDiscoveryOutput() {
-        //added just to make addresses accessible for testing
-        private String addresses;
-
-        @Override
-        public void provideCurrentNodes(@Nullable List<ClusterNodeAddress> list) {
-            if (list == null) {
-                list = new ArrayList<>();
-            }
-            list.add(cla);
-            addresses = list.iterator().next().getHost();
-        }
-
-        @Override
-        public String toString() {
-            return addresses;
-        }
-
-        @Override
-        public void setReloadInterval(int i) {
-            i = 1;
-        }
-    };
+    private @NotNull DnsClusterDiscovery dnsClusterDiscovery;
+    private @NotNull ClusterDiscoveryInput input;
+    private @NotNull ClusterDiscoveryOutput output;
 
     @BeforeEach
-    public void setUp() {
-        initMocks(this);
+    void setUp() {
+        input = mock(ClusterDiscoveryInput.class);
+        when(input.getOwnAddress()).thenReturn(cla);
+        output = mock(ClusterDiscoveryOutput.class);
+
+        final DnsDiscoveryMetrics metrics = mock(DnsDiscoveryMetrics.class);
+        when(metrics.getResolutionRequestCounter()).thenReturn(new Counter());
+
+        final DnsDiscoveryConfigExtended configuration = mock(DnsDiscoveryConfigExtended.class);
+        when(configuration.dnsServerAddress()).thenReturn(null);
+        when(configuration.discoveryAddress()).thenReturn("www.hivemq.com");
+        when(configuration.resolutionTimeout()).thenReturn(30);
+        when(configuration.reloadInterval()).thenReturn(60);
+
         dnsClusterDiscovery = new DnsClusterDiscovery(configuration, metrics);
     }
 
     @Test
-    public void testDnsClusterDiscoverySingleNode() {
-        when(metrics.getResolutionRequestCounter()).thenReturn(new Counter());
-
-        final String discoveryAddress = "www.hivemq.com";
-        final int discoveryTimeout = 30;
-        final int reloadInterval = 60;
-
-        when(configuration.dnsServerAddress()).thenReturn(null);
-        when(configuration.discoveryAddress()).thenReturn(discoveryAddress);
-        when(configuration.resolutionTimeout()).thenReturn(discoveryTimeout);
-        when(configuration.reloadInterval()).thenReturn(reloadInterval);
-
+    void whenInitAndReload_thenAddressIsProvided() {
         dnsClusterDiscovery.init(input, output);
+
+        final ArgumentCaptor<List<ClusterNodeAddress>> captor = ArgumentCaptor.forClass(List.class);
+        verify(output).provideCurrentNodes(captor.capture());
+        assertEquals(List.of(new ClusterNodeAddress("212.72.72.12", 1883)), captor.getValue());
+
         dnsClusterDiscovery.reload(input, output);
 
-        // A record for dc-square.de
-        assertEquals("212.72.72.12", output.toString());
+        verify(output, times(2)).provideCurrentNodes(captor.capture());
+        assertEquals(List.of(new ClusterNodeAddress("212.72.72.12", 1883)), captor.getValue());
     }
-
 }
