@@ -70,4 +70,6 @@ dependencies {
 license {
     header = rootDir.resolve("HEADER")
     mapping("java", "SLASHSTAR_STYLE")
+    exclude("com/hivemq/extensions/dns/TestDnsServer.java")
+    exclude("hivemq-prometheus-extension/**/*")
 }
