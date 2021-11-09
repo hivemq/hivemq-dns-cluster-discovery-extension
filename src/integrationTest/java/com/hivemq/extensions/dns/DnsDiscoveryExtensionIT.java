@@ -33,7 +33,6 @@ import org.testcontainers.utility.MountableFile;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Objects;
@@ -51,6 +50,8 @@ class DnsDiscoveryExtensionIT {
 
     private static final @NotNull Logger log = LoggerFactory.getLogger(DnsDiscoveryExtensionIT.class);
 
+    private static final @NotNull String DNS_DISCOVERY_ADDRESS = "tasks.hivemq";
+
     private static final @NotNull String SUCCESS_METRIC = "com_hivemq_dns_cluster_discovery_extension_query_success_count";
     private static final @NotNull String FAILURE_METRIC = "com_hivemq_dns_cluster_discovery_extension_query_failed_count";
     private static final @NotNull String IP_COUNT_METRIC = "com_hivemq_dns_cluster_discovery_extension_resolved_addresses";
@@ -60,14 +61,15 @@ class DnsDiscoveryExtensionIT {
 
     @BeforeEach
     void setUp(final @NotNull @TempDir Path extensionTempPath) throws IOException {
-        testDnsServer = new TestDnsServer(Set.of("tasks.hivemq"), 4);
+        testDnsServer = new TestDnsServer(Set.of(DNS_DISCOVERY_ADDRESS), 4);
         testDnsServer.start();
 
         final Path dnsConfigFile = extensionTempPath.resolve("dnsdiscovery.properties");
-        final String replacedConfig = Files.readString(Path.of(getClass().getResource("/dnsdiscovery.properties").getPath()))
-                .replace("dnsServerPlaceholder", "host.docker.internal:" + testDnsServer.localAddress().getPort())
-                .replace("discoveryPlaceholder", "tasks.hivemq");
-        Files.writeString(dnsConfigFile, replacedConfig, StandardOpenOption.CREATE);
+        Files.writeString(dnsConfigFile,
+                "dnsServerAddress=host.docker.internal:" + testDnsServer.localAddress().getPort() + '\n' +
+                        "discoveryAddress=" + DNS_DISCOVERY_ADDRESS + '\n' +
+                        "resolutionTimeout=30\n" +
+                        "reloadInterval=60");
 
         node1 = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq4").withTag("latest"))
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
@@ -75,7 +77,8 @@ class DnsDiscoveryExtensionIT {
                 .withFileInExtensionHomeFolder(MountableFile.forHostPath(dnsConfigFile), "hivemq-dns-cluster-discovery")
                 .withExtension(MountableFile.forClasspathResource("hivemq-prometheus-extension"))
                 .withExposedPorts(9399)
-                .withCreateContainerCmdModifier(createContainerCmd -> Objects.requireNonNull(createContainerCmd.getHostConfig()).withExtraHosts("host.docker.internal:host-gateway"));
+                .withCreateContainerCmdModifier(it ->
+                        Objects.requireNonNull(it.getHostConfig()).withExtraHosts("host.docker.internal:host-gateway"));
     }
 
     @AfterEach
