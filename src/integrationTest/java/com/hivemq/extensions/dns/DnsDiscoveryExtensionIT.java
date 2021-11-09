@@ -25,6 +25,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.Container;
 import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.shaded.okhttp3.OkHttpClient;
@@ -59,8 +60,8 @@ class DnsDiscoveryExtensionIT {
     private static final @NotNull String IP_COUNT_METRIC = "com_hivemq_dns_cluster_discovery_extension_resolved_addresses";
 
     private @NotNull TestDnsServer testDnsServer;
-    private @NotNull Network network;
-    private @NotNull GenericContainer<?> dockerHostContainer;
+//    private @NotNull Network network;
+//    private @NotNull GenericContainer<?> dockerHostContainer;
     private @NotNull HiveMQTestContainerExtension node1;
 
     @BeforeEach
@@ -70,17 +71,18 @@ class DnsDiscoveryExtensionIT {
 
         final Path dnsConfigFile = extensionTempPath.resolve("dnsdiscovery.properties");
         final String replacedConfig = Files.readString(Path.of(getClass().getResource("/dnsdiscovery.properties").getPath()))
-                .replace("dnsServerPlaceholder", "docker-host:" + testDnsServer.localAddress().getPort())
+//                .replace("dnsServerPlaceholder", "docker-host:" + testDnsServer.localAddress().getPort())
+                .replace("dnsServerPlaceholder", "host.docker.internal:" + testDnsServer.localAddress().getPort())
                 .replace("discoveryPlaceholder", "tasks.hivemq");
         Files.writeString(dnsConfigFile, replacedConfig, StandardOpenOption.CREATE);
 
-        network = Network.newNetwork();
-
-        dockerHostContainer = new GenericContainer<>(DockerImageName.parse("qoomon/docker-host"))
-                .withNetwork(network)
-                .withNetworkAliases("docker-host")
-                .withCreateContainerCmdModifier(createContainerCmd -> Objects.requireNonNull(createContainerCmd.getHostConfig()).withCapAdd(Capability.NET_ADMIN, Capability.NET_RAW));
-        dockerHostContainer.start();
+//        network = Network.newNetwork();
+//
+//        dockerHostContainer = new GenericContainer<>(DockerImageName.parse("qoomon/docker-host"))
+//                .withNetwork(network)
+//                .withNetworkAliases("docker-host")
+//                .withCreateContainerCmdModifier(createContainerCmd -> Objects.requireNonNull(createContainerCmd.getHostConfig()).withCapAdd(Capability.NET_ADMIN, Capability.NET_RAW));
+//        dockerHostContainer.start();
 
         node1 = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq4").withTag("latest"))
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
@@ -88,23 +90,26 @@ class DnsDiscoveryExtensionIT {
                 .withFileInExtensionHomeFolder(MountableFile.forHostPath(dnsConfigFile), "hivemq-dns-cluster-discovery")
                 .withExtension(MountableFile.forClasspathResource("hivemq-prometheus-extension"))
                 //.withEnv("HIVEMQ_CLUSTER_TRANSPORT_TYPE", "TCP")
-                .withNetwork(network)
+//                .withNetwork(network)
                 .withNetworkAliases("node1")
-                .withExposedPorts(9399);
+                .withExposedPorts(9399)
+                .withCreateContainerCmdModifier(createContainerCmd -> Objects.requireNonNull(createContainerCmd.getHostConfig()).withExtraHosts("host.docker.internal:host-gateway"));
     }
 
     @AfterEach
     void tearDown() {
         node1.stop();
-        dockerHostContainer.stop();
-        network.close();
+//        dockerHostContainer.stop();
+//        network.close();
         testDnsServer.stop();
     }
 
     @Test
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
-    void test_metric_success() throws IOException {
+    void test_metric_success() throws IOException, InterruptedException {
         node1.start();
+        final Container.ExecResult execResult = node1.execInContainer("cat", "/etc/hosts");
+        System.err.println(execResult.getStdout());
 
         final Map<String, Float> metrics = getMetrics();
         assertEquals(1, metrics.get(SUCCESS_METRIC));
