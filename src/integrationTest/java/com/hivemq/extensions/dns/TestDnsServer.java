@@ -60,7 +60,7 @@ class TestDnsServer extends DnsServer {
 
     @Override
     public void start() throws IOException {
-        InetSocketAddress address = new InetSocketAddress(NetUtil.LOCALHOST4, 0);
+        InetSocketAddress address = new InetSocketAddress("0.0.0.0", 0);
         UdpTransport transport = new UdpTransport(address.getHostName(), address.getPort());
         setTransports(transport);
 
