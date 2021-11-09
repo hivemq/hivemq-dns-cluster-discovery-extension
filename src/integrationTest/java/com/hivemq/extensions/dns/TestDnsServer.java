@@ -17,7 +17,6 @@ package com.hivemq.extensions.dns;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
-import io.netty.util.NetUtil;
 import org.apache.directory.server.dns.DnsServer;
 import org.apache.directory.server.dns.io.decoder.DnsMessageDecoder;
 import org.apache.directory.server.dns.io.encoder.DnsMessageEncoder;
@@ -57,21 +56,19 @@ class TestDnsServer extends DnsServer {
         this.store = store;
     }
 
-
     @Override
     public void start() throws IOException {
-        InetSocketAddress address = new InetSocketAddress("0.0.0.0", 0);
-        UdpTransport transport = new UdpTransport(address.getHostName(), address.getPort());
+        final InetSocketAddress address = new InetSocketAddress("0.0.0.0", 0);
+        final UdpTransport transport = new UdpTransport(address.getHostName(), address.getPort());
         setTransports(transport);
 
-        DatagramAcceptor acceptor = transport.getAcceptor();
+        final DatagramAcceptor acceptor = transport.getAcceptor();
 
         acceptor.setHandler(new DnsProtocolHandler(this, store) {
             @Override
             public void sessionCreated(final @NotNull IoSession session) {
                 session.getFilterChain()
-                        .addFirst("codec", new ProtocolCodecFilter(
-                                new TestDnsProtocolUdpCodecFactory()));
+                        .addFirst("codec", new ProtocolCodecFilter(new TestDnsProtocolUdpCodecFactory()));
             }
         });
 
@@ -86,18 +83,20 @@ class TestDnsServer extends DnsServer {
     }
 
     private static final class TestDnsProtocolUdpCodecFactory implements ProtocolCodecFactory {
-        private final @NotNull DnsMessageEncoder encoder = new DnsMessageEncoder();
 
         @Override
         public ProtocolEncoder getEncoder(final @NotNull IoSession session) {
             return new DnsUdpEncoder() {
+                private final @NotNull DnsMessageEncoder encoder = new DnsMessageEncoder();
 
                 @Override
-                public void encode(final @NotNull IoSession session,
-                                   final @NotNull Object message,
-                                   final @NotNull ProtocolEncoderOutput out) {
-                    IoBuffer buf = IoBuffer.allocate(1024);
-                    DnsMessage dnsMessage = (DnsMessage) message;
+                public void encode(
+                        final @NotNull IoSession session,
+                        final @NotNull Object message,
+                        final @NotNull ProtocolEncoderOutput out) {
+
+                    final IoBuffer buf = IoBuffer.allocate(1024);
+                    final DnsMessage dnsMessage = (DnsMessage) message;
                     encoder.encode(buf, dnsMessage);
                     buf.flip();
                     out.write(buf);
@@ -111,10 +110,12 @@ class TestDnsServer extends DnsServer {
                 private final @NotNull DnsMessageDecoder decoder = new DnsMessageDecoder();
 
                 @Override
-                public void decode(final @NotNull IoSession session,
-                                   final @NotNull IoBuffer in,
-                                   final @NotNull ProtocolDecoderOutput out) throws IOException {
-                    DnsMessage message = decoder.decode(in);
+                public void decode(
+                        final @NotNull IoSession session,
+                        final @NotNull IoBuffer in,
+                        final @NotNull ProtocolDecoderOutput out) throws IOException {
+
+                    final DnsMessage message = decoder.decode(in);
                     out.write(message);
                 }
             };
@@ -126,40 +127,38 @@ class TestDnsServer extends DnsServer {
         private final @NotNull Set<String> domains;
         private final int numOfRecords;
 
-        private FixedRecordStore(final @NotNull Set<String> domains, int numOfRecords) {
+        FixedRecordStore(final @NotNull Set<String> domains, final int numOfRecords) {
             this.domains = domains;
             this.numOfRecords = numOfRecords;
         }
 
         @Override
-        public Set<ResourceRecord> getRecords(QuestionRecord questionRecord) {
-            String name = questionRecord.getDomainName();
-            if (domains.contains(name)) {
-                if (questionRecord.getRecordType() == RecordType.A) {
-                    Set<ResourceRecord> records = new HashSet<>();
-                    for (int i = 0; i < numOfRecords; i++) {
-                        records.add(newARecord(name, i + ".2.3.4"));
-                    }
-                    return records;
+        public @Nullable Set<ResourceRecord> getRecords(final @NotNull QuestionRecord questionRecord) {
+            final String name = questionRecord.getDomainName();
+            if (domains.contains(name) && (questionRecord.getRecordType() == RecordType.A)) {
+                final Set<ResourceRecord> records = new HashSet<>();
+                for (int i = 0; i < numOfRecords; i++) {
+                    records.add(newARecord(name, i + ".2.3.4"));
                 }
+                return records;
             }
             return null;
         }
     }
 
 
-    public static @NotNull ResourceRecord newARecord(final @NotNull String name,
-                                                     final @NotNull String ipAddress) {
-        return new TestResourceRecord(name,
-                RecordType.A,
-                Map.of(DnsAttribute.IP_ADDRESS.toLowerCase(Locale.US), ipAddress));
+    private static @NotNull ResourceRecord newARecord(final @NotNull String name, final @NotNull String ipAddress) {
+        return new TestResourceRecord(
+                name, RecordType.A, Map.of(DnsAttribute.IP_ADDRESS.toLowerCase(Locale.US), ipAddress));
     }
 
     private static final class TestResourceRecord extends ResourceRecordImpl {
 
-        TestResourceRecord(final @NotNull String domainName,
-                           final @NotNull RecordType recordType,
-                           final @NotNull Map<String, Object> attributes) {
+        TestResourceRecord(
+                final @NotNull String domainName,
+                final @NotNull RecordType recordType,
+                final @NotNull Map<String, Object> attributes) {
+
             super(domainName, recordType, RecordClass.IN, 100, attributes);
         }
 
