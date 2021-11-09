@@ -52,7 +52,7 @@ tasks.withType<Test>().configureEach {
     useJUnitPlatform()
 
     testLogging {
-        events("STARTED", "FAILED", "SKIPPED")
+        events("STARTED", "FAILED", "SKIPPED", "STANDARD_OUT", "STANDARD_ERROR")
     }
 }
 
