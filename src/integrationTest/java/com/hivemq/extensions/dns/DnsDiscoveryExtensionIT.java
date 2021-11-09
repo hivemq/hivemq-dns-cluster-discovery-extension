@@ -15,6 +15,7 @@
  */
 package com.hivemq.extensions.dns;
 
+import com.github.dockerjava.api.model.Capability;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.testcontainer.junit5.HiveMQTestContainerExtension;
 import org.junit.jupiter.api.AfterEach;
@@ -24,6 +25,8 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.testcontainers.containers.GenericContainer;
+import org.testcontainers.containers.Network;
 import org.testcontainers.shaded.okhttp3.OkHttpClient;
 import org.testcontainers.shaded.okhttp3.Request;
 import org.testcontainers.shaded.okhttp3.Response;
@@ -36,6 +39,7 @@ import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -55,6 +59,8 @@ class DnsDiscoveryExtensionIT {
     private static final @NotNull String IP_COUNT_METRIC = "com_hivemq_dns_cluster_discovery_extension_resolved_addresses";
 
     private @NotNull TestDnsServer testDnsServer;
+    private @NotNull Network network;
+    private @NotNull GenericContainer<?> dockerHostContainer;
     private @NotNull HiveMQTestContainerExtension node1;
 
     @BeforeEach
@@ -64,9 +70,17 @@ class DnsDiscoveryExtensionIT {
 
         final Path dnsConfigFile = extensionTempPath.resolve("dnsdiscovery.properties");
         final String replacedConfig = Files.readString(Path.of(getClass().getResource("/dnsdiscovery.properties").getPath()))
-                .replace("dnsServerPlaceholder", "host.docker.internal" + ":" + testDnsServer.localAddress().getPort())
+                .replace("dnsServerPlaceholder", "docker-host:" + testDnsServer.localAddress().getPort())
                 .replace("discoveryPlaceholder", "tasks.hivemq");
         Files.writeString(dnsConfigFile, replacedConfig, StandardOpenOption.CREATE);
+
+        network = Network.newNetwork();
+
+        dockerHostContainer = new GenericContainer<>(DockerImageName.parse("qoomon/docker-host"))
+                .withNetwork(network)
+                .withNetworkAliases("docker-host")
+                .withCreateContainerCmdModifier(createContainerCmd -> Objects.requireNonNull(createContainerCmd.getHostConfig()).withCapAdd(Capability.NET_ADMIN, Capability.NET_RAW));
+        dockerHostContainer.start();
 
         node1 = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq4").withTag("latest"))
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
@@ -74,6 +88,7 @@ class DnsDiscoveryExtensionIT {
                 .withFileInExtensionHomeFolder(MountableFile.forHostPath(dnsConfigFile), "hivemq-dns-cluster-discovery")
                 .withExtension(MountableFile.forClasspathResource("hivemq-prometheus-extension"))
                 //.withEnv("HIVEMQ_CLUSTER_TRANSPORT_TYPE", "TCP")
+                .withNetwork(network)
                 .withNetworkAliases("node1")
                 .withExposedPorts(9399);
     }
@@ -81,6 +96,8 @@ class DnsDiscoveryExtensionIT {
     @AfterEach
     void tearDown() {
         node1.stop();
+        dockerHostContainer.stop();
+        network.close();
         testDnsServer.stop();
     }
 
