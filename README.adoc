@@ -7,11 +7,10 @@
 
 = HiveMQ DNS Cluster Discovery Extension
 
-*Extension Type*: Integration
-
-*Version*: 4.1.0
-
-*License*: Apache License 2.0
+image:https://img.shields.io/badge/Extension_Type-Integration-orange?style=for-the-badge[Extension Type]
+image:https://img.shields.io/github/v/release/hivemq/hivemq-dns-cluster-discovery-extension?style=for-the-badge[GitHub release (latest by date), link=https://github.com/hivemq/hivemq-dns-cluster-discovery-extension/releases/latest]
+image:https://img.shields.io/github/license/hivemq/hivemq-dns-cluster-discovery-extension?style=for-the-badge&color=brightgreen[GitHub, link=LICENSE]
+image:https://img.shields.io/github/workflow/status/hivemq/hivemq-dns-cluster-discovery-extension/CI%20Check/master?style=for-the-badge[GitHub Workflow Status (branch), link=https://github.com/hivemq/hivemq-dns-cluster-discovery-extension/actions/workflows/check.yml?query=branch%3Amaster]
 
 == Purpose
 
@@ -128,7 +127,8 @@ To implement your own solution for this discovery method, you must either provid
 
 To use DNS discovery on Kubernetes, you will generally need a headless service pointing to the HiveMQ deployment, similar to the following configuration:
 
-```
+[source]
+----
 kind: Service
 apiVersion: v1
 metadata:
@@ -143,7 +143,7 @@ spec:
       port: 1883
       targetPort: 1883
   clusterIP: None
-```
+----
 
 NOTE: The selector and name for the service are important.
 The selector defines which pods are listed in the resulting DNS record.
