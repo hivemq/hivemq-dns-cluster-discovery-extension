@@ -8,15 +8,16 @@
 = HiveMQ DNS Cluster Discovery Extension
 
 image:https://img.shields.io/badge/Extension_Type-Integration-orange?style=for-the-badge[Extension Type]
-image:https://img.shields.io/github/v/release/hivemq/hivemq-dns-cluster-discovery-extension?style=for-the-badge[GitHub release (latest by date), link=https://github.com/hivemq/hivemq-dns-cluster-discovery-extension/releases/latest]
-image:https://img.shields.io/github/license/hivemq/hivemq-dns-cluster-discovery-extension?style=for-the-badge&color=brightgreen[GitHub, link=LICENSE]
-image:https://img.shields.io/github/workflow/status/hivemq/hivemq-dns-cluster-discovery-extension/CI%20Check/master?style=for-the-badge[GitHub Workflow Status (branch), link=https://github.com/hivemq/hivemq-dns-cluster-discovery-extension/actions/workflows/check.yml?query=branch%3Amaster]
+image:https://img.shields.io/github/v/release/hivemq/hivemq-dns-cluster-discovery-extension?style=for-the-badge[GitHub release (latest by date),link=https://github.com/hivemq/hivemq-dns-cluster-discovery-extension/releases/latest]
+image:https://img.shields.io/github/license/hivemq/hivemq-dns-cluster-discovery-extension?style=for-the-badge&color=brightgreen[GitHub,link=LICENSE]
+image:https://img.shields.io/github/workflow/status/hivemq/hivemq-dns-cluster-discovery-extension/CI%20Check/master?style=for-the-badge[GitHub Workflow Status (branch),link=https://github.com/hivemq/hivemq-dns-cluster-discovery-extension/actions/workflows/check.yml?query=branch%3Amaster]
 
 == Purpose
 
 This HiveMQ extension enables you to operate elastic HiveMQ clusters with an container orchestration platform (Kubernetes, Openshift) as well as cloud environments.
 DNS is used as cluster discovery mechanism, which is ideal for environments that scale dynamically.
-HiveMQ instances are added and removed at runtime as soon as they become available via DNS. This extension is typically used with {hivemq-docker-image}[Docker] and container orchestration platforms.
+HiveMQ instances are added and removed at runtime as soon as they become available via DNS.
+This extension is typically used with {hivemq-docker-image}[Docker] and container orchestration platforms.
 
 This extension can be used with any cloud environment / container orchestration environment that supports service discovery using a {round-robin}[round-robin^] DNS A record.
 
@@ -39,10 +40,8 @@ If it does not exist, the extension will not attempt to reload the properties an
 
 |=======================================================================
 |Environment Variable |Default value |property key |Meaning
-|HIVEMQ_DNS_DISCOVERY_ADDRESS |- |discoveryAddress |Address providing the A
-record for the usage as cluster node addresses
-|HIVEMQ_DNS_DISCOVERY_TIMEOUT |30 |resolutionTimeout |Wait time
-for DNS resolution to complete
+|HIVEMQ_DNS_DISCOVERY_ADDRESS |- |discoveryAddress |Address providing the A record for the usage as cluster node addresses
+|HIVEMQ_DNS_DISCOVERY_TIMEOUT |30 |resolutionTimeout |Wait time for DNS resolution to complete
 |=======================================================================
 
 == Metrics
@@ -52,12 +51,14 @@ The Dns Cluster discovery extension delivers a set of metrics that can be used t
 The following metrics are available:
 
 These two counter metrics indicate a successful or failed dns query attempt in order to receive the IP addresses of cluster members:
+
 ----
 com.hivemq.dns-cluster-discovery-extension.query.success.count
 com.hivemq.dns-cluster-discovery-extension.query.failed.count
 ----
 
 This gauge shows the number of currently found cluster member IP addresses that were received during the last dns query:
+
 ----
 com.hivemq.dns-cluster-discovery-extension.resolved-addresses
 ----
