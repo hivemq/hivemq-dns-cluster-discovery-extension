@@ -35,7 +35,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -77,8 +76,7 @@ class DnsDiscoveryExtensionIT {
                 .withFileInExtensionHomeFolder(MountableFile.forHostPath(dnsConfigFile), "hivemq-dns-cluster-discovery")
                 .withExtension(MountableFile.forClasspathResource("hivemq-prometheus-extension"))
                 .withExposedPorts(9399)
-                .withCreateContainerCmdModifier(it ->
-                        Objects.requireNonNull(it.getHostConfig()).withExtraHosts("host.docker.internal:host-gateway"));
+                .withExtraHost("host.docker.internal", "host-gateway");
     }
 
     @AfterEach
