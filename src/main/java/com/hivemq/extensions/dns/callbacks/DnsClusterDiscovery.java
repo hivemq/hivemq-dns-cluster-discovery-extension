@@ -36,8 +36,8 @@ import org.slf4j.LoggerFactory;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -80,7 +80,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
                      final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         ownAddress = clusterDiscoveryInput.getOwnAddress();
-        clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.reloadInterval());
+        clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.getReloadInterval());
         loadClusterNodeAddresses(clusterDiscoveryOutput);
     }
 
@@ -88,7 +88,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
                        final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         loadClusterNodeAddresses(clusterDiscoveryOutput);
-        clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.reloadInterval());
+        clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.getReloadInterval());
     }
 
     @Override
@@ -113,12 +113,12 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
     private @Nullable List<ClusterNodeAddress> loadOtherNodes() throws TimeoutException, InterruptedException {
 
-        final String discoveryAddress = discoveryConfiguration.discoveryAddress();
-        if (discoveryAddress == null) {
+        final Optional<String> discoveryAddress = discoveryConfiguration.getDiscoveryAddress();
+        if (discoveryAddress.isEmpty()) {
             log.warn("Discovery address not set, skipping dns query.");
             return null;
         }
-        final int discoveryTimeout = discoveryConfiguration.resolutionTimeout();
+        final int discoveryTimeout = discoveryConfiguration.getResolutionTimeout();
 
         // initialize netty DNS resolver
         final DnsNameResolverBuilder dnsNameResolverBuilder = new DnsNameResolverBuilder(eventLoopGroup.next())
@@ -126,18 +126,13 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
                 .optResourceEnabled(false);
 
         // use custom DNS server address if necessary
-        final Map<String, Integer> dnsServerAddress = discoveryConfiguration.dnsServerAddress();
-        if (dnsServerAddress != null) {
-            final String address = dnsServerAddress.keySet().iterator().next();
-            final int port = dnsServerAddress.get(address);
-
-            final InetSocketAddress dnsInetSocketAddress = new InetSocketAddress(address, port);
-            dnsNameResolverBuilder.nameServerProvider(new SingletonDnsServerAddressStreamProvider(dnsInetSocketAddress));
-        }
+        final Optional<InetSocketAddress> dnsServerAddress = discoveryConfiguration.getDnsServerAddress();
+        dnsServerAddress.ifPresent(inetSocketAddress -> dnsNameResolverBuilder.nameServerProvider(
+                new SingletonDnsServerAddressStreamProvider(inetSocketAddress)));
 
         try (final DnsNameResolver resolver = dnsNameResolverBuilder.build()) {
 
-            final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress);
+            final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress.get());
             final List<ClusterNodeAddress> clusterNodeAddresses = addresses.get(discoveryTimeout, TimeUnit.SECONDS)
                     .stream()
                     // Skip any possibly unresolved elements

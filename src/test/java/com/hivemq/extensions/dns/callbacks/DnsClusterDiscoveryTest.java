@@ -27,6 +27,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -49,10 +50,10 @@ class DnsClusterDiscoveryTest {
         when(metrics.getResolutionRequestCounter()).thenReturn(new Counter());
 
         final DnsDiscoveryConfigExtended configuration = mock(DnsDiscoveryConfigExtended.class);
-        when(configuration.dnsServerAddress()).thenReturn(null);
-        when(configuration.discoveryAddress()).thenReturn("www.hivemq.com");
-        when(configuration.resolutionTimeout()).thenReturn(30);
-        when(configuration.reloadInterval()).thenReturn(60);
+        when(configuration.getDnsServerAddress()).thenReturn(Optional.empty());
+        when(configuration.getDiscoveryAddress()).thenReturn(Optional.of("www.hivemq.com"));
+        when(configuration.getResolutionTimeout()).thenReturn(30);
+        when(configuration.getReloadInterval()).thenReturn(60);
 
         dnsClusterDiscovery = new DnsClusterDiscovery(configuration, metrics);
     }
