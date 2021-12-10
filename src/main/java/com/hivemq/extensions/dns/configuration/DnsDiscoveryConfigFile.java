@@ -19,19 +19,19 @@ import org.aeonbits.owner.Config;
 
 
 @Config.Sources("file:${configFile}")
-public interface DnsDiscoveryConfig extends Config {
+public interface DnsDiscoveryConfigFile extends Config {
 
     @Key("dnsServerAddress")
-    String dnsServerAddress();
+    String getFileDnsServerAddress();
 
     @Key("discoveryAddress")
-    String discoveryAddress();
+    String getFileDiscoveryAddress();
 
     @Key("resolutionTimeout")
-    @DefaultValue("30")
-    int resolutionTimeout();
+    @DefaultValue("-1")
+    int getFileResolutionTimeout();
 
     @Key("reloadInterval")
-    @DefaultValue("30")
-    int reloadInterval();
+    @DefaultValue("-1")
+    int getFileReloadInterval();
 }

@@ -17,68 +17,79 @@ package com.hivemq.extensions.dns.configuration;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
+import com.hivemq.extensions.dns.exception.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Collections;
-import java.util.Map;
+import java.net.InetSocketAddress;
+import java.util.Optional;
+
+import static com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigEnvironment.DISCOVERY_RELOAD_INTERVAL_ENV;
+import static com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigEnvironment.DISCOVERY_TIMEOUT_ENV;
 
 /**
- * Configuration class that encapsulate dnsDiscoveryConfig to enable usage of environment Variables
+ * Configuration class that encapsulates the dnsDiscoveryConfig to enable usage of environment Variables.
  *
  * @author Anja Helmbrecht-Schaar
  * @author Lukas Brand
  */
 public class DnsDiscoveryConfigExtended {
 
-    private static final Logger log = LoggerFactory.getLogger(DnsDiscoveryConfigExtended.class);
+    private static final @NotNull Logger log = LoggerFactory.getLogger(DnsDiscoveryConfigExtended.class);
 
-    private static final String DNS_SERVER_ADDRESS = "HIVEMQ_DNS_SERVER_ADDRESS";
-    private static final String DISCOVERY_ADDRESS_ENV = "HIVEMQ_DNS_DISCOVERY_ADDRESS";
-    private static final String DISCOVERY_TIMEOUT_ENV = "HIVEMQ_DNS_DISCOVERY_TIMEOUT";
-    private static final String DISCOVERY_RELOAD_INTERVAL_ENV = "HIVEMQ_DNS_RELOAD_INTERVAL";
+    private final @NotNull DnsDiscoveryConfigFile configFile;
+    private final @NotNull DnsDiscoveryConfigEnvironment configEnvironment;
 
-    private final DnsDiscoveryConfig dnsDiscoveryConfig;
+    private @Nullable InetSocketAddress dnsServerAddress = null;
+    private @Nullable String discoveryAddress = null;
+    private int resolutionTimeout = 30;
+    private int reloadInterval = 30;
 
-    public DnsDiscoveryConfigExtended(final @NotNull ConfigurationReader reader) {
-        dnsDiscoveryConfig = reader.get();
+    DnsDiscoveryConfigExtended(final @NotNull DnsDiscoveryConfigFile configFile,
+                               final @NotNull DnsDiscoveryConfigEnvironment configEnvironment) {
+        this.configFile = configFile;
+        this.configEnvironment = configEnvironment;
     }
 
-    /**
-     * method to get the dns server address
-     * either from environment variable
-     * or from properties configuration
-     *
-     * @return String - the dns server address
-     */
-    public @Nullable Map<String, Integer> dnsServerAddress() {
-        String dnsServerAddress = System.getenv(DNS_SERVER_ADDRESS);
+    public static @NotNull DnsDiscoveryConfigExtended createInstance(final @NotNull DnsDiscoveryConfigFile configFile) {
+        final DnsDiscoveryConfigEnvironment configEnvironment = new DnsDiscoveryConfigEnvironment();
+        final DnsDiscoveryConfigExtended extendedConfig = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        extendedConfig.dnsServerAddress();
+        extendedConfig.discoveryAddress();
+        extendedConfig.resolutionTimeout();
+        extendedConfig.reloadInterval();
+        return extendedConfig;
+    }
 
-        if (dnsServerAddress == null || dnsServerAddress.isBlank()) {
+
+    void dnsServerAddress() {
+        final String envDnsServerAddress = configEnvironment.getEnvDnsServerAddress();
+
+        if (envDnsServerAddress != null && !envDnsServerAddress.isBlank()) {
             try {
-                dnsServerAddress = dnsDiscoveryConfig.dnsServerAddress();
+                dnsServerAddress = processDnsServerAddress(envDnsServerAddress);
+            } catch (final Exception e) {
+                log.error("Could not read the dns server address from the environment variable.");
+                throw new ConfigurationException(e);
+            }
+        } else {
+            try {
+                final String propDnsServerAddress = configFile.getFileDnsServerAddress();
 
-                if (dnsServerAddress == null || dnsServerAddress.isBlank()) {
-                    log.debug("No dns server address was set in the configuration file or environment variable.");
-                    return null;
-                } else if (dnsServerAddress.contains(":")) {
-                    final String address = dnsServerAddress.split(":")[0];
-                    int port;
-                    try {
-                        port = Integer.parseInt(dnsServerAddress.split(":")[1]);
-                    } catch (final NumberFormatException e) {
-                        log.error("The dns server address port could not be read. Taking default port 53.");
-                        port = 53;
-                    }
-                    return Collections.singletonMap(address, port);
+                if (propDnsServerAddress != null && !propDnsServerAddress.isBlank()) {
+                    dnsServerAddress = processDnsServerAddress(propDnsServerAddress);
                 } else {
-                    return Collections.singletonMap(dnsServerAddress, 53);
+                    log.warn("No dns server address was set in the configuration file or environment variable.");
                 }
             } catch (final Exception e) {
-                log.debug("No dns server address was set in the configuration file or environment variable.");
-                return null;
+                log.error("Could not read the dns server address from the properties file.");
+                throw new ConfigurationException(e);
             }
-        } else if (dnsServerAddress.contains(":")) {
+        }
+    }
+
+    @NotNull InetSocketAddress processDnsServerAddress(final @NotNull String dnsServerAddress) {
+        if (dnsServerAddress.contains(":")) {
             final String address = dnsServerAddress.split(":")[0];
             int port;
             try {
@@ -87,73 +98,122 @@ public class DnsDiscoveryConfigExtended {
                 log.error("The dns server address port could not be read. Taking default port 53.");
                 port = 53;
             }
-            return Collections.singletonMap(address, port);
+            return new InetSocketAddress(address, port);
         } else {
-            return Collections.singletonMap(dnsServerAddress, 53);
+            return new InetSocketAddress(dnsServerAddress, 53);
         }
     }
 
+    void discoveryAddress() {
+        final String envDiscoveryAddress = configEnvironment.getEnvDiscoveryAddress();
 
-    /**
-     * method to get discovery address
-     * either from environment variable
-     * or from properties configuration
-     *
-     * @return String - the discovery address
-     */
-    public @Nullable String discoveryAddress() {
-        final String discoveryAddress = System.getenv(DISCOVERY_ADDRESS_ENV);
-
-        if (discoveryAddress == null || discoveryAddress.isEmpty()) {
+        if (envDiscoveryAddress != null && !envDiscoveryAddress.isEmpty()) {
+            discoveryAddress = envDiscoveryAddress;
+        } else {
             try {
-                return dnsDiscoveryConfig.discoveryAddress();
+                final String propDiscoveryAddress = configFile.getFileDiscoveryAddress();
+                if (propDiscoveryAddress != null && !propDiscoveryAddress.isBlank()) {
+                    discoveryAddress = propDiscoveryAddress;
+                } else {
+                    log.warn("No discovery address was set in the configuration file or environment variable.");
+                }
             } catch (final Exception e) {
-                log.error("No discovery address was set in the configuration file or environment variable.");
-                return null;
+                log.error("Could not read the discovery address from the properties file.");
+                throw new ConfigurationException(e);
             }
         }
-        return discoveryAddress;
     }
 
-    /**
-     * method to get discovery timeout
-     * either from environment variable
-     * or from properties configuration
-     * or default setting
-     *
-     * @return int - the resolution timeout
-     */
-    public int resolutionTimeout() {
-        final @Nullable String resolveTimeout = System.getenv(DISCOVERY_TIMEOUT_ENV);
+    void resolutionTimeout() {
+        final String envResolutionTimeout = configEnvironment.getEnvResolutionTimeout();
 
-        if (resolveTimeout != null && !resolveTimeout.isEmpty()) {
+        if (envResolutionTimeout != null && !envResolutionTimeout.isEmpty()) {
             try {
-                return Integer.parseInt(resolveTimeout);
+                resolutionTimeout = Integer.parseInt(envResolutionTimeout);
+                return;
             } catch (final NumberFormatException e) {
                 log.error("Resolution timeout from env {} could not be parsed to int. Fallback to configuration value 'resolutionTimeout'.", DISCOVERY_TIMEOUT_ENV);
             }
         }
-        return dnsDiscoveryConfig.resolutionTimeout();
+
+        try {
+            final int propResolutionTimeout = configFile.getFileResolutionTimeout();
+
+            if (propResolutionTimeout != -1) {
+                resolutionTimeout = propResolutionTimeout;
+            } else {
+                log.debug("No resolution timeout was set in the configuration file or environment variable. Defaulting to {}.", resolutionTimeout);
+            }
+        } catch (final Exception e) {
+            log.error("Could not read the resolution timeout from the properties file.");
+            throw new ConfigurationException(e);
+        }
     }
 
-    /**
-     * method to get the discovery reload interval
-     * either from environment variable
-     * or from properties configuration
-     * or default setting
-     *
-     * @return int - the resolution timeout
-     */
-    public int reloadInterval() {
-        final @Nullable String reloadInterval = System.getenv(DISCOVERY_RELOAD_INTERVAL_ENV);
+    void reloadInterval() {
+        final String envReloadInterval = configEnvironment.getEnvReloadInterval();
 
-        if (reloadInterval != null && !reloadInterval.isBlank()) {
+        if (envReloadInterval != null && !envReloadInterval.isBlank()) {
             try {
-                return Integer.parseInt(reloadInterval);
+                reloadInterval = Integer.parseInt(envReloadInterval);
+                return;
             } catch (final NumberFormatException e) {
                 log.error("Reload interval from env {} could not be parsed to int. Fallback to configuration value 'reloadInterval'.", DISCOVERY_RELOAD_INTERVAL_ENV);
             }
         }
-        return dnsDiscoveryConfig.reloadInterval();
+
+        try {
+            final int propReloadInterval = configFile.getFileReloadInterval();
+
+            if (propReloadInterval != -1) {
+                reloadInterval = propReloadInterval;
+            } else {
+                log.debug("No reload interval was set in the configuration file or environment variable. Defaulting to {}.", reloadInterval);
+            }
+        } catch (final Exception e) {
+            log.error("Could not read the reload interval from the properties file.");
+            throw new ConfigurationException(e);
+        }
+    }
+
+
+    /**
+     * Getter for the dns server address. Its value is either from an environment
+     * variable or a properties configuration.
+     *
+     * @return String - the dns server address
+     */
+    public @NotNull Optional<InetSocketAddress> getDnsServerAddress() {
+        return Optional.ofNullable(dnsServerAddress);
+    }
+
+    /**
+     * Getter for the discovery address. Its value is either from an environment
+     * variable or a properties configuration.
+     *
+     * @return String - the discovery address
+     */
+    public @NotNull Optional<String> getDiscoveryAddress() {
+        return Optional.ofNullable(discoveryAddress);
+    }
+
+    /**
+     * Getter for the discovery resolution timeout. Its value is either from an environment
+     * variable, a properties configuration or its default setting.
+     *
+     * @return int - the resolution timeout
+     */
+    public int getResolutionTimeout() {
+        return resolutionTimeout;
+    }
+
+    /**
+     * Getter for the discovery reload interval. Its value is either from an environment
+     * variable, a properties configuration or its default setting.
+     *
+     * @return int - the reload interval
+     */
+    public int getReloadInterval() {
+        return reloadInterval;
     }
 }

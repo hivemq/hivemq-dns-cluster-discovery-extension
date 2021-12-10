@@ -24,9 +24,13 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extensions.dns.callbacks.DnsClusterDiscovery;
-import com.hivemq.extensions.dns.configuration.ConfigurationReader;
+import com.hivemq.extensions.dns.configuration.ConfigurationFileReader;
+import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigFile;
 import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigExtended;
+import com.hivemq.extensions.dns.exception.ConfigurationException;
 import com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics;
+
+import java.io.File;
 
 /**
  * This is the main class of the dns discovery extension, which is instantiated during the HiveMQ start up process.
@@ -41,24 +45,21 @@ public class DnsDiscoveryExtensionMain implements ExtensionMain {
     public void extensionStart(final @NotNull ExtensionStartInput extensionStartInput,
                                final @NotNull ExtensionStartOutput extensionStartOutput) {
         try {
-            final ConfigurationReader configurationReader = new ConfigurationReader(extensionStartInput.getExtensionInformation());
-            if (configurationReader.get() == null) {
-                extensionStartOutput.preventExtensionStartup("Unspecified error occurred while reading configuration");
-                return;
-            }
+            final File extensionHomeFolder = extensionStartInput.getExtensionInformation().getExtensionHomeFolder();
+            final ConfigurationFileReader configurationFileReader = new ConfigurationFileReader(extensionHomeFolder);
+            final DnsDiscoveryConfigFile dnsFileConfig = configurationFileReader.get();
+            final DnsDiscoveryConfigExtended extendedConfig = DnsDiscoveryConfigExtended.createInstance(dnsFileConfig);
             final DnsDiscoveryMetrics metrics = new DnsDiscoveryMetrics(Services.metricRegistry());
-            final DnsDiscoveryConfigExtended configuration = new DnsDiscoveryConfigExtended(configurationReader);
 
-            dnsClusterDiscovery = new DnsClusterDiscovery(configuration, metrics);
+            dnsClusterDiscovery = new DnsClusterDiscovery(extendedConfig, metrics);
 
-            try {
-                Services.clusterService().addDiscoveryCallback(dnsClusterDiscovery);
-            } catch (final UnsupportedOperationException e) {
-                extensionStartOutput.preventExtensionStartup(e.getMessage());
-            }
-
+            Services.clusterService().addDiscoveryCallback(dnsClusterDiscovery);
+        } catch (final ConfigurationException e) {
+            extensionStartOutput.preventExtensionStartup("Error while reading the configuration" +
+                    ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
         } catch (final Exception e) {
-            extensionStartOutput.preventExtensionStartup("Unknown error while starting the extension" + ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
+            extensionStartOutput.preventExtensionStartup("Unknown error while starting the extension" +
+                    ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
         }
     }
 

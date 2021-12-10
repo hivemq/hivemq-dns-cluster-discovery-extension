@@ -46,6 +46,8 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit-jupiter.version")}")
     testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
+    testImplementation("org.mockito:mockito-junit-jupiter:${property("mockito.version")}")
+    testRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
 }
 
 tasks.withType<Test>().configureEach {
@@ -58,7 +60,7 @@ dependencies {
     integrationTestImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
     integrationTestImplementation("com.hivemq:hivemq-testcontainer-junit5:${property("hivemq-testcontainer.version")}")
     integrationTestImplementation("org.apache.directory.server:apacheds-protocol-dns:${property("apache-dns.version")}")
-    integrationTestRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
+    //integrationTestRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
 }
 
 /* ******************** checks ******************** */

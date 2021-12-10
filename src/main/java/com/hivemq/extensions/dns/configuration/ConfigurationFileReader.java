@@ -16,10 +16,7 @@
 package com.hivemq.extensions.dns.configuration;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.aeonbits.owner.ConfigFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -28,37 +25,34 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Configuration Reader that reads properties from config file
+ * Configuration reader that reads properties from config file.
  *
  * @author Daniel Krüger
  */
-public class ConfigurationReader {
-
-    private static final @NotNull Logger log = LoggerFactory.getLogger(ConfigurationReader.class);
+public class ConfigurationFileReader {
 
     static final @NotNull String CONFIG_PATH = "dnsdiscovery.properties";
 
     private final @NotNull File extensionHomeFolder;
 
-    public ConfigurationReader(final @NotNull ExtensionInformation extensionInformation) {
-        this.extensionHomeFolder = extensionInformation.getExtensionHomeFolder();
+    public ConfigurationFileReader(final @NotNull File extensionHomeFolder) {
+        this.extensionHomeFolder = extensionHomeFolder;
         ConfigFactory.setProperty("configFile", new File(extensionHomeFolder, CONFIG_PATH).getAbsolutePath());
     }
 
     /**
-     * method that loads and reloads the configuration for the dns discovery properties, by (re)creating the configuration
+     * Method that loads and reloads the configuration for the dns discovery properties, by (re)creating the configuration.
      *
-     * @return DnsDiscoveryConfig
+     * @return DnsDiscoveryConfigFile The configuration from the config file or default values.
      */
-    public @NotNull DnsDiscoveryConfig get() {
+    public @NotNull DnsDiscoveryConfigFile get() {
         final File propertiesFile = new File(extensionHomeFolder, CONFIG_PATH);
         try (final InputStream inputStream = new FileInputStream(propertiesFile)) {
             final Properties properties = new Properties();
             properties.load(inputStream);
-            return ConfigFactory.create(DnsDiscoveryConfig.class, properties);
+            return ConfigFactory.create(DnsDiscoveryConfigFile.class, properties);
         } catch (final IOException e) {
-            log.warn("No dnsdiscovery.properties file found. Use default settings");
-            return ConfigFactory.create(DnsDiscoveryConfig.class);
+            return ConfigFactory.create(DnsDiscoveryConfigFile.class);
         }
     }
 }

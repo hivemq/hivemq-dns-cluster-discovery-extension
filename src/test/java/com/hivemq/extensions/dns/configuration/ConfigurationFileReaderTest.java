@@ -16,7 +16,6 @@
 package com.hivemq.extensions.dns.configuration;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.parameter.ExtensionInformation;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
@@ -26,37 +25,34 @@ import java.nio.file.Path;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 
-class ConfigurationReaderTest {
+class ConfigurationFileReaderTest {
 
-    private @NotNull ConfigurationReader configurationReader;
+    private @NotNull ConfigurationFileReader configurationFileReader;
     private @NotNull Path configPath;
 
     @BeforeEach
     void setUp(final @TempDir @NotNull Path tempDir) {
-        final ExtensionInformation extensionInformation = mock(ExtensionInformation.class);
-        when(extensionInformation.getExtensionHomeFolder()).thenReturn(tempDir.toFile());
-        configurationReader = new ConfigurationReader(extensionInformation);
-        configPath = tempDir.resolve(ConfigurationReader.CONFIG_PATH);
+        configurationFileReader = new ConfigurationFileReader(tempDir.toFile());
+        configPath = tempDir.resolve(ConfigurationFileReader.CONFIG_PATH);
     }
 
     @Test
     void whenNoFile_thenUseDefaults() {
-        final DnsDiscoveryConfig config = configurationReader.get();
+        final DnsDiscoveryConfigFile config = configurationFileReader.get();
 
-        assertEquals(30, config.resolutionTimeout());
-        assertNull(config.discoveryAddress());
+        assertEquals(-1, config.getFileResolutionTimeout());
+        assertNull(config.getFileDiscoveryAddress());
     }
 
     @Test
     void whenConfigIsCorrect_thenUseValues() throws Exception {
         Files.writeString(configPath, "discoveryAddress:task.hivemq\nresolutionTimeout:10");
 
-        final DnsDiscoveryConfig config = configurationReader.get();
+        final DnsDiscoveryConfigFile config = configurationFileReader.get();
 
-        assertEquals(10, config.resolutionTimeout());
-        assertEquals("task.hivemq", config.discoveryAddress());
+        assertEquals(10, config.getFileResolutionTimeout());
+        assertEquals("task.hivemq", config.getFileDiscoveryAddress());
     }
 
     @Test
@@ -64,7 +60,7 @@ class ConfigurationReaderTest {
         Files.writeString(configPath, "discoveryAddress:\nresolutionTimeout:30Seconds");
 
         final UnsupportedOperationException e =
-                assertThrows(UnsupportedOperationException.class, () -> configurationReader.get().resolutionTimeout());
+                assertThrows(UnsupportedOperationException.class, () -> configurationFileReader.get().getFileResolutionTimeout());
         assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
     }
 
@@ -73,7 +69,7 @@ class ConfigurationReaderTest {
         Files.writeString(configPath, "discoveryAddress:\nreloadInterval:30Seconds");
 
         final UnsupportedOperationException e =
-                assertThrows(UnsupportedOperationException.class, () -> configurationReader.get().reloadInterval());
+                assertThrows(UnsupportedOperationException.class, () -> configurationFileReader.get().getFileReloadInterval());
         assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
     }
 }
