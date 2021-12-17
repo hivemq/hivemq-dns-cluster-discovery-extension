@@ -79,7 +79,7 @@ public class DnsDiscoveryConfigExtended {
                 if (propDnsServerAddress != null && !propDnsServerAddress.isBlank()) {
                     dnsServerAddress = processDnsServerAddress(propDnsServerAddress);
                 } else {
-                    log.warn("No dns server address was set in the configuration file or environment variable.");
+                    log.debug("No dns server address was set in the configuration file or environment variable.");
                 }
             } catch (final Exception e) {
                 log.error("Could not read the dns server address from the properties file.");
