@@ -192,11 +192,4 @@ class DnsDiscoveryConfigExtendedTest {
 
         assertEquals(30, configExtended.getReloadInterval());
     }
-
-
-    @Test
-    void test_processDnsServerAddress() {
-
-    }
-
 }

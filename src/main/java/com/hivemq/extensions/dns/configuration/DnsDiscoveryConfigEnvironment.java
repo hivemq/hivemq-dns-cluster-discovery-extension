@@ -30,7 +30,6 @@ public class DnsDiscoveryConfigEnvironment {
     static final @NotNull String DISCOVERY_TIMEOUT_ENV = "HIVEMQ_DNS_DISCOVERY_TIMEOUT";
     static final @NotNull String DISCOVERY_RELOAD_INTERVAL_ENV = "HIVEMQ_DNS_RELOAD_INTERVAL";
 
-
     @Nullable String getEnvDnsServerAddress() {
         return System.getenv(DNS_SERVER_ADDRESS);
     }
