@@ -43,8 +43,7 @@ hivemqExtension.resources {
 /* ******************** test ******************** */
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter-api:${property("junit-jupiter.version")}")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.junit.jupiter:junit-jupiter:${property("junit-jupiter.version")}")
     testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
     testImplementation("org.mockito:mockito-junit-jupiter:${property("mockito.version")}")
     testRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
@@ -57,9 +56,11 @@ tasks.withType<Test>().configureEach {
 /* ******************** integration test ******************** */
 
 dependencies {
-    integrationTestImplementation("org.testcontainers:testcontainers:${property("testcontainers.version")}")
-    integrationTestImplementation("com.hivemq:hivemq-testcontainer-junit5:${property("hivemq-testcontainer.version")}")
+    integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${property("testcontainers.version")}"))
+    integrationTestImplementation("org.testcontainers:testcontainers")
+    integrationTestImplementation("org.testcontainers:hivemq")
     integrationTestImplementation("org.apache.directory.server:apacheds-protocol-dns:${property("apache-dns.version")}")
+    integrationTestImplementation("com.squareup.okhttp3:okhttp:${property("ok-http.version")}")
 }
 
 /* ******************** checks ******************** */

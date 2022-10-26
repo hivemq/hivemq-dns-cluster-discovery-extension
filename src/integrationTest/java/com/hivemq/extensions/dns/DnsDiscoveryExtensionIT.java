@@ -16,7 +16,9 @@
 package com.hivemq.extensions.dns;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.testcontainer.junit5.HiveMQTestContainerExtension;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,9 +26,7 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.testcontainers.shaded.okhttp3.OkHttpClient;
-import org.testcontainers.shaded.okhttp3.Request;
-import org.testcontainers.shaded.okhttp3.Response;
+import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
@@ -56,7 +56,7 @@ class DnsDiscoveryExtensionIT {
     private static final @NotNull String IP_COUNT_METRIC = "com_hivemq_dns_cluster_discovery_extension_resolved_addresses";
 
     private @NotNull TestDnsServer testDnsServer;
-    private @NotNull HiveMQTestContainerExtension node1;
+    private @NotNull HiveMQContainer node1;
 
     @BeforeEach
     void setUp(final @NotNull @TempDir Path extensionTempPath) throws IOException {
@@ -70,10 +70,10 @@ class DnsDiscoveryExtensionIT {
                         "resolutionTimeout=30\n" +
                         "reloadInterval=60");
 
-        node1 = new HiveMQTestContainerExtension(DockerImageName.parse("hivemq/hivemq4").withTag("latest"))
+        node1 = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("latest"))
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
                 .withExtension(MountableFile.forClasspathResource("hivemq-dns-cluster-discovery"))
-                .withFileInExtensionHomeFolder(MountableFile.forHostPath(dnsConfigFile), "hivemq-dns-cluster-discovery")
+                .withFileInExtensionHomeFolder(MountableFile.forHostPath(dnsConfigFile), "hivemq-dns-cluster-discovery", "dnsdiscovery.properties")
                 .withExtension(MountableFile.forClasspathResource("hivemq-prometheus-extension"))
                 .withExposedPorts(9399)
                 .withExtraHost("host.docker.internal", "host-gateway");
