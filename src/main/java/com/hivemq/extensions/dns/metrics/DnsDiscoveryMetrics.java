@@ -25,8 +25,8 @@ import com.hivemq.extension.sdk.api.annotations.NotNull;
  */
 public class DnsDiscoveryMetrics {
 
-    public final static @NotNull String DNS_DISCOVERY_EXTENSION = "dns-cluster-discovery-extension";
-    public final static @NotNull String HIVEMQ_PREFIX = "com.hivemq";
+    static final @NotNull String DNS_DISCOVERY_EXTENSION = "dns-cluster-discovery-extension";
+    static final @NotNull String HIVEMQ_PREFIX = "com.hivemq";
 
     private final @NotNull MetricRegistry metricRegistry;
     private final @NotNull Counter connectCounter;
@@ -45,7 +45,6 @@ public class DnsDiscoveryMetrics {
     public @NotNull Counter getResolutionRequestFailedCounter() {
         return failedConnectCounter;
     }
-
 
     public void registerAddressCountGauge(final @NotNull Gauge<Integer> supplier) {
         metricRegistry.gauge(
