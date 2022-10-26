@@ -17,7 +17,6 @@ package com.hivemq.extensions.dns.configuration;
 
 import org.aeonbits.owner.Config;
 
-
 @Config.Sources("file:${configFile}")
 public interface DnsDiscoveryConfigFile extends Config {
 

@@ -44,7 +44,6 @@ import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-
 /**
  * Cluster discovery using DNS resolution of round-robin A records.
  * Uses non-blocking netty API for DNS resolution, reads discovery parameters as environment variables.
@@ -65,9 +64,9 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
 
     private @Nullable ClusterNodeAddress ownAddress;
 
-
-    public DnsClusterDiscovery(final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration,
-                               final @NotNull DnsDiscoveryMetrics dnsDiscoveryMetrics) {
+    public DnsClusterDiscovery(
+            final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration,
+            final @NotNull DnsDiscoveryMetrics dnsDiscoveryMetrics) {
         this.eventLoopGroup = new NioEventLoopGroup();
         this.addressValidator = InetAddressValidator.getInstance();
         this.discoveryConfiguration = discoveryConfiguration;
@@ -77,16 +76,18 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
     }
 
     @Override
-    public void init(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
-                     final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+    public void init(
+            final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
+            final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         ownAddress = clusterDiscoveryInput.getOwnAddress();
         clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.getReloadInterval());
         loadClusterNodeAddresses(clusterDiscoveryOutput);
     }
 
     @Override
-    public void reload(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
-                       final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
+    public void reload(
+            final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
+            final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         loadClusterNodeAddresses(clusterDiscoveryOutput);
         clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.getReloadInterval());
     }
@@ -96,7 +97,6 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         eventLoopGroup.shutdownGracefully();
     }
 
-
     private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         try {
             final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
@@ -104,7 +104,7 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
                 clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
                 dnsDiscoveryMetrics.getResolutionRequestCounter().inc();
             }
-        } catch (TimeoutException | InterruptedException e) {
+        } catch (final TimeoutException | InterruptedException e) {
             log.error("Timeout while getting other node addresses");
             dnsDiscoveryMetrics.getResolutionRequestFailedCounter().inc();
             addressesCount.set(0);
@@ -153,5 +153,4 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         }
         return null;
     }
-
 }
