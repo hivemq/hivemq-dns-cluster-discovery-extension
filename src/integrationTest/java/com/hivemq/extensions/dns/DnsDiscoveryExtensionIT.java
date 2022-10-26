@@ -35,12 +35,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 /**
  * @author Lukas Brand
@@ -109,15 +109,15 @@ class DnsDiscoveryExtensionIT {
     }
 
     private @NotNull Map<String, Float> getMetrics() throws IOException {
-
         final OkHttpClient client = new OkHttpClient();
-        final Request request1 = new Request.Builder()
+        final Request request = new Request.Builder()
                 .url("http://" + node1.getHost() + ":" + node1.getMappedPort(9399) + "/metrics")
                 .build();
 
-        final Response response1 = client.newCall(request1).execute();
-        assertNotNull(response1.body());
-        final String string = response1.body().string();
+        final String string;
+        try (final Response response = client.newCall(request).execute()) {
+            string = Objects.requireNonNull(response.body()).string();
+        }
 
         return parseMetrics(string, Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
     }

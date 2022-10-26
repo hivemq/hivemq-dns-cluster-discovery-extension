@@ -45,8 +45,9 @@ public class DnsDiscoveryConfigExtended {
     private int resolutionTimeout = 30;
     private int reloadInterval = 30;
 
-    DnsDiscoveryConfigExtended(final @NotNull DnsDiscoveryConfigFile configFile,
-                               final @NotNull DnsDiscoveryConfigEnvironment configEnvironment) {
+    DnsDiscoveryConfigExtended(
+            final @NotNull DnsDiscoveryConfigFile configFile,
+            final @NotNull DnsDiscoveryConfigEnvironment configEnvironment) {
         this.configFile = configFile;
         this.configEnvironment = configEnvironment;
     }
@@ -60,7 +61,6 @@ public class DnsDiscoveryConfigExtended {
         extendedConfig.reloadInterval();
         return extendedConfig;
     }
-
 
     void dnsServerAddress() {
         final String envDnsServerAddress = configEnvironment.getEnvDnsServerAddress();
@@ -175,7 +175,6 @@ public class DnsDiscoveryConfigExtended {
             throw new ConfigurationException(e);
         }
     }
-
 
     /**
      * Getter for the dns server address. Its value is either from an environment

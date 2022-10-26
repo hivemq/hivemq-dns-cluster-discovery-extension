@@ -42,8 +42,9 @@ public class DnsDiscoveryExtensionMain implements ExtensionMain {
     private @Nullable DnsClusterDiscovery dnsClusterDiscovery;
 
     @Override
-    public void extensionStart(final @NotNull ExtensionStartInput extensionStartInput,
-                               final @NotNull ExtensionStartOutput extensionStartOutput) {
+    public void extensionStart(
+            final @NotNull ExtensionStartInput extensionStartInput,
+            final @NotNull ExtensionStartOutput extensionStartOutput) {
         try {
             final File extensionHomeFolder = extensionStartInput.getExtensionInformation().getExtensionHomeFolder();
             final ConfigurationFileReader configurationFileReader = new ConfigurationFileReader(extensionHomeFolder);
@@ -64,11 +65,11 @@ public class DnsDiscoveryExtensionMain implements ExtensionMain {
     }
 
     @Override
-    public void extensionStop(final @NotNull ExtensionStopInput extensionStopInput,
-                              final @NotNull ExtensionStopOutput extensionStopOutput) {
+    public void extensionStop(
+            final @NotNull ExtensionStopInput extensionStopInput,
+            final @NotNull ExtensionStopOutput extensionStopOutput) {
         if (dnsClusterDiscovery != null) {
             Services.clusterService().removeDiscoveryCallback(dnsClusterDiscovery);
         }
     }
 }
-

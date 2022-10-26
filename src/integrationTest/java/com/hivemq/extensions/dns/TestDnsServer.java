@@ -146,7 +146,6 @@ class TestDnsServer extends DnsServer {
         }
     }
 
-
     private static @NotNull ResourceRecord newARecord(final @NotNull String name, final @NotNull String ipAddress) {
         return new TestResourceRecord(
                 name, RecordType.A, Map.of(DnsAttribute.IP_ADDRESS.toLowerCase(Locale.US), ipAddress));

@@ -20,7 +20,6 @@ import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 
-
 /**
  * @author Lukas Brand
  */
@@ -53,6 +52,4 @@ public class DnsDiscoveryMetrics {
                 MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "resolved-addresses"),
                 () -> supplier);
     }
-
-
 }
