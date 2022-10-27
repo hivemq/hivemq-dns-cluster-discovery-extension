@@ -25,8 +25,8 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extensions.dns.callbacks.DnsClusterDiscovery;
 import com.hivemq.extensions.dns.configuration.ConfigurationFileReader;
-import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigFile;
 import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigExtended;
+import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigFile;
 import com.hivemq.extensions.dns.exception.ConfigurationException;
 import com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics;
 

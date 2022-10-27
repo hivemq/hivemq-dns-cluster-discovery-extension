@@ -132,7 +132,9 @@ public class DnsDiscoveryConfigExtended {
                 resolutionTimeout = Integer.parseInt(envResolutionTimeout);
                 return;
             } catch (final NumberFormatException e) {
-                log.error("Resolution timeout from env {} could not be parsed to int. Fallback to configuration value 'resolutionTimeout'.", DISCOVERY_TIMEOUT_ENV);
+                log.error(
+                        "Resolution timeout from env {} could not be parsed to int. Fallback to configuration value 'resolutionTimeout'.",
+                        DISCOVERY_TIMEOUT_ENV);
             }
         }
 
@@ -142,7 +144,9 @@ public class DnsDiscoveryConfigExtended {
             if (propResolutionTimeout != -1) {
                 resolutionTimeout = propResolutionTimeout;
             } else {
-                log.debug("No resolution timeout was set in the configuration file or environment variable. Defaulting to {}.", resolutionTimeout);
+                log.debug(
+                        "No resolution timeout was set in the configuration file or environment variable. Defaulting to {}.",
+                        resolutionTimeout);
             }
         } catch (final Exception e) {
             log.error("Could not read the resolution timeout from the properties file.");
@@ -158,7 +162,9 @@ public class DnsDiscoveryConfigExtended {
                 reloadInterval = Integer.parseInt(envReloadInterval);
                 return;
             } catch (final NumberFormatException e) {
-                log.error("Reload interval from env {} could not be parsed to int. Fallback to configuration value 'reloadInterval'.", DISCOVERY_RELOAD_INTERVAL_ENV);
+                log.error(
+                        "Reload interval from env {} could not be parsed to int. Fallback to configuration value 'reloadInterval'.",
+                        DISCOVERY_RELOAD_INTERVAL_ENV);
             }
         }
 
@@ -168,7 +174,9 @@ public class DnsDiscoveryConfigExtended {
             if (propReloadInterval != -1) {
                 reloadInterval = propReloadInterval;
             } else {
-                log.debug("No reload interval was set in the configuration file or environment variable. Defaulting to {}.", reloadInterval);
+                log.debug(
+                        "No reload interval was set in the configuration file or environment variable. Defaulting to {}.",
+                        reloadInterval);
             }
         } catch (final Exception e) {
             log.error("Could not read the reload interval from the properties file.");

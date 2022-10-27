@@ -121,26 +121,27 @@ public class DnsClusterDiscovery implements ClusterDiscoveryCallback {
         final int discoveryTimeout = discoveryConfiguration.getResolutionTimeout();
 
         // initialize netty DNS resolver
-        final DnsNameResolverBuilder dnsNameResolverBuilder = new DnsNameResolverBuilder(eventLoopGroup.next())
-                .channelType(NioDatagramChannel.class)
-                .optResourceEnabled(false);
+        final DnsNameResolverBuilder dnsNameResolverBuilder =
+                new DnsNameResolverBuilder(eventLoopGroup.next()).channelType(NioDatagramChannel.class)
+                        .optResourceEnabled(false);
 
         // use custom DNS server address if necessary
         final Optional<InetSocketAddress> dnsServerAddress = discoveryConfiguration.getDnsServerAddress();
-        dnsServerAddress.ifPresent(inetSocketAddress -> dnsNameResolverBuilder.nameServerProvider(
-                new SingletonDnsServerAddressStreamProvider(inetSocketAddress)));
+        dnsServerAddress.ifPresent(inetSocketAddress -> dnsNameResolverBuilder.nameServerProvider(new SingletonDnsServerAddressStreamProvider(
+                inetSocketAddress)));
 
         try (final DnsNameResolver resolver = dnsNameResolverBuilder.build()) {
 
             final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress.get());
-            final List<ClusterNodeAddress> clusterNodeAddresses = addresses.get(discoveryTimeout, TimeUnit.SECONDS)
-                    .stream()
-                    // Skip any possibly unresolved elements
-                    .filter(Objects::nonNull)
-                    // Check if the discoveryAddress address we got from the DNS is a valid IP address
-                    .filter((address) -> addressValidator.isValid(address.getHostAddress()))
-                    .map((address) -> new ClusterNodeAddress(address.getHostAddress(), ownAddress.getPort()))
-                    .collect(Collectors.toList());
+            final List<ClusterNodeAddress> clusterNodeAddresses =
+                    addresses.get(discoveryTimeout, TimeUnit.SECONDS)
+                            .stream()
+                            // Skip any possibly unresolved elements
+                            .filter(Objects::nonNull)
+                            // Check if the discoveryAddress address we got from the DNS is a valid IP address
+                            .filter((address) -> addressValidator.isValid(address.getHostAddress()))
+                            .map((address) -> new ClusterNodeAddress(address.getHostAddress(), ownAddress.getPort()))
+                            .collect(Collectors.toList());
 
             clusterNodeAddresses.forEach((address) -> log.debug("Found address: '{}'", address.getHost()));
             addressesCount.set(clusterNodeAddresses.size());

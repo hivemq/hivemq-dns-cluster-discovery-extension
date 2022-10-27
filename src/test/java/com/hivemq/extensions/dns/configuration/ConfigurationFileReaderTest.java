@@ -23,7 +23,10 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigurationFileReaderTest {
 
@@ -58,8 +61,8 @@ class ConfigurationFileReaderTest {
     void whenTypoInResolutionTimeout_thenThrowException() throws Exception {
         Files.writeString(configPath, "discoveryAddress:\nresolutionTimeout:30Seconds");
 
-        final UnsupportedOperationException e =
-                assertThrows(UnsupportedOperationException.class, () -> configurationFileReader.get().getFileResolutionTimeout());
+        final UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
+                () -> configurationFileReader.get().getFileResolutionTimeout());
         assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
     }
 
@@ -67,8 +70,8 @@ class ConfigurationFileReaderTest {
     void whenTypoInReloadInterval_thenThrowException() throws Exception {
         Files.writeString(configPath, "discoveryAddress:\nreloadInterval:30Seconds");
 
-        final UnsupportedOperationException e =
-                assertThrows(UnsupportedOperationException.class, () -> configurationFileReader.get().getFileReloadInterval());
+        final UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
+                () -> configurationFileReader.get().getFileReloadInterval());
         assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
     }
 }

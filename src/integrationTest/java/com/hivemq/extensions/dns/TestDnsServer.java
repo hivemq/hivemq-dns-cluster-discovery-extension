@@ -20,7 +20,12 @@ import com.hivemq.extension.sdk.api.annotations.Nullable;
 import org.apache.directory.server.dns.DnsServer;
 import org.apache.directory.server.dns.io.decoder.DnsMessageDecoder;
 import org.apache.directory.server.dns.io.encoder.DnsMessageEncoder;
-import org.apache.directory.server.dns.messages.*;
+import org.apache.directory.server.dns.messages.DnsMessage;
+import org.apache.directory.server.dns.messages.QuestionRecord;
+import org.apache.directory.server.dns.messages.RecordClass;
+import org.apache.directory.server.dns.messages.RecordType;
+import org.apache.directory.server.dns.messages.ResourceRecord;
+import org.apache.directory.server.dns.messages.ResourceRecordImpl;
 import org.apache.directory.server.dns.protocol.DnsProtocolHandler;
 import org.apache.directory.server.dns.protocol.DnsUdpEncoder;
 import org.apache.directory.server.dns.store.DnsAttribute;
@@ -28,7 +33,13 @@ import org.apache.directory.server.dns.store.RecordStore;
 import org.apache.directory.server.protocol.shared.transport.UdpTransport;
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.*;
+import org.apache.mina.filter.codec.ProtocolCodecFactory;
+import org.apache.mina.filter.codec.ProtocolCodecFilter;
+import org.apache.mina.filter.codec.ProtocolDecoder;
+import org.apache.mina.filter.codec.ProtocolDecoderAdapter;
+import org.apache.mina.filter.codec.ProtocolDecoderOutput;
+import org.apache.mina.filter.codec.ProtocolEncoder;
+import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.apache.mina.transport.socket.DatagramAcceptor;
 
 import java.io.IOException;
@@ -42,7 +53,8 @@ import java.util.Set;
  * This Class was inspired by the Netty Project:
  *
  * @author Lukas Brand
- * @see <a href="https://github.com/netty/netty/blob/4.1/resolver-dns/src/test/java/io/netty/resolver/dns/TestDnsServer.java">TestDnsServer.java</a>
+ * @see <a
+ *         href="https://github.com/netty/netty/blob/4.1/resolver-dns/src/test/java/io/netty/resolver/dns/TestDnsServer.java">TestDnsServer.java</a>
  */
 class TestDnsServer extends DnsServer {
 
@@ -147,8 +159,9 @@ class TestDnsServer extends DnsServer {
     }
 
     private static @NotNull ResourceRecord newARecord(final @NotNull String name, final @NotNull String ipAddress) {
-        return new TestResourceRecord(
-                name, RecordType.A, Map.of(DnsAttribute.IP_ADDRESS.toLowerCase(Locale.US), ipAddress));
+        return new TestResourceRecord(name,
+                RecordType.A,
+                Map.of(DnsAttribute.IP_ADDRESS.toLowerCase(Locale.US), ipAddress));
     }
 
     private static final class TestResourceRecord extends ResourceRecordImpl {
