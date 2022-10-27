@@ -15,16 +15,17 @@
  */
 package com.hivemq.extensions.dns.configuration;
 
+import com.hivemq.extension.sdk.api.annotations.Nullable;
 import org.aeonbits.owner.Config;
 
 @Config.Sources("file:${configFile}")
 public interface DnsDiscoveryConfigFile extends Config {
 
     @Key("dnsServerAddress")
-    String getFileDnsServerAddress();
+    @Nullable String getFileDnsServerAddress();
 
     @Key("discoveryAddress")
-    String getFileDiscoveryAddress();
+    @Nullable String getFileDiscoveryAddress();
 
     @Key("resolutionTimeout")
     @DefaultValue("-1")
