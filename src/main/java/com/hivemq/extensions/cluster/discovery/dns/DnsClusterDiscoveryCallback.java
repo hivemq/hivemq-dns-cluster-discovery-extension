@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hivemq.extensions.cluster.discovery.dns.callbacks;
+package com.hivemq.extensions.cluster.discovery.dns;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
@@ -51,7 +51,7 @@ import java.util.stream.Collectors;
  * @author Daniel Krüger
  * @author Lukas Brand
  */
-public class DnsClusterDiscoveryCallback implements ClusterDiscoveryCallback {
+class DnsClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
     private static final @NotNull Logger log = LoggerFactory.getLogger(DnsClusterDiscoveryCallback.class);
 
@@ -64,7 +64,7 @@ public class DnsClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
     private @Nullable ClusterNodeAddress ownAddress;
 
-    public DnsClusterDiscoveryCallback(
+    DnsClusterDiscoveryCallback(
             final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration,
             final @NotNull DnsDiscoveryMetrics dnsDiscoveryMetrics) {
         this.eventLoopGroup = new NioEventLoopGroup();
