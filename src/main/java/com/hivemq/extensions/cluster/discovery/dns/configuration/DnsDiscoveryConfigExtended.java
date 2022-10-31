@@ -13,19 +13,16 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hivemq.extensions.dns.configuration;
+package com.hivemq.extensions.cluster.discovery.dns.configuration;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
 import com.hivemq.extension.sdk.api.annotations.Nullable;
-import com.hivemq.extensions.dns.exception.ConfigurationException;
+import com.hivemq.extensions.cluster.discovery.dns.exception.ConfigurationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.InetSocketAddress;
 import java.util.Optional;
-
-import static com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigEnvironment.DISCOVERY_RELOAD_INTERVAL_ENV;
-import static com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigEnvironment.DISCOVERY_TIMEOUT_ENV;
 
 /**
  * Configuration class that encapsulates the dnsDiscoveryConfig to enable usage of environment Variables.
@@ -134,7 +131,7 @@ public class DnsDiscoveryConfigExtended {
             } catch (final NumberFormatException e) {
                 log.error(
                         "Resolution timeout from env {} could not be parsed to int. Fallback to configuration value 'resolutionTimeout'.",
-                        DISCOVERY_TIMEOUT_ENV);
+                        DnsDiscoveryConfigEnvironment.DISCOVERY_TIMEOUT_ENV);
             }
         }
 
@@ -164,7 +161,7 @@ public class DnsDiscoveryConfigExtended {
             } catch (final NumberFormatException e) {
                 log.error(
                         "Reload interval from env {} could not be parsed to int. Fallback to configuration value 'reloadInterval'.",
-                        DISCOVERY_RELOAD_INTERVAL_ENV);
+                        DnsDiscoveryConfigEnvironment.DISCOVERY_RELOAD_INTERVAL_ENV);
             }
         }
 

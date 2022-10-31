@@ -13,10 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hivemq.extensions.dns.configuration;
+package com.hivemq.extensions.cluster.discovery.dns.configuration;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extensions.dns.exception.ConfigurationException;
+import com.hivemq.extensions.cluster.discovery.dns.exception.ConfigurationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;

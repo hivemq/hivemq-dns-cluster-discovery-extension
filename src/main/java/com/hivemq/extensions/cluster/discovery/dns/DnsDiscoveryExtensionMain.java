@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hivemq.extensions.dns;
+package com.hivemq.extensions.cluster.discovery.dns;
 
 import com.hivemq.extension.sdk.api.ExtensionMain;
 import com.hivemq.extension.sdk.api.annotations.NotNull;
@@ -23,12 +23,12 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
-import com.hivemq.extensions.dns.callbacks.DnsClusterDiscovery;
-import com.hivemq.extensions.dns.configuration.ConfigurationFileReader;
-import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigExtended;
-import com.hivemq.extensions.dns.configuration.DnsDiscoveryConfigFile;
-import com.hivemq.extensions.dns.exception.ConfigurationException;
-import com.hivemq.extensions.dns.metrics.DnsDiscoveryMetrics;
+import com.hivemq.extensions.cluster.discovery.dns.callbacks.DnsClusterDiscovery;
+import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationFileReader;
+import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigExtended;
+import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigFile;
+import com.hivemq.extensions.cluster.discovery.dns.exception.ConfigurationException;
+import com.hivemq.extensions.cluster.discovery.dns.metrics.DnsDiscoveryMetrics;
 
 import java.io.File;
 
