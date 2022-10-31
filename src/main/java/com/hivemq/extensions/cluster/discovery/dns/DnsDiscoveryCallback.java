@@ -51,9 +51,9 @@ import java.util.stream.Collectors;
  * @author Daniel Krüger
  * @author Lukas Brand
  */
-class DnsClusterDiscoveryCallback implements ClusterDiscoveryCallback {
+class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
 
-    private static final @NotNull Logger log = LoggerFactory.getLogger(DnsClusterDiscoveryCallback.class);
+    private static final @NotNull Logger log = LoggerFactory.getLogger(DnsDiscoveryCallback.class);
 
     private final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration;
     private final @NotNull DnsDiscoveryMetrics dnsDiscoveryMetrics;
@@ -64,7 +64,7 @@ class DnsClusterDiscoveryCallback implements ClusterDiscoveryCallback {
 
     private @Nullable ClusterNodeAddress ownAddress;
 
-    DnsClusterDiscoveryCallback(
+    DnsDiscoveryCallback(
             final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration,
             final @NotNull DnsDiscoveryMetrics dnsDiscoveryMetrics) {
         this.eventLoopGroup = new NioEventLoopGroup();

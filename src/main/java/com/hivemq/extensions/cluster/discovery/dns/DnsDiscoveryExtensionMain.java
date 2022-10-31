@@ -38,7 +38,7 @@ import java.io.File;
  */
 public class DnsDiscoveryExtensionMain implements ExtensionMain {
 
-    private @Nullable DnsClusterDiscoveryCallback dnsClusterDiscoveryCallback;
+    private @Nullable DnsDiscoveryCallback dnsDiscoveryCallback;
 
     @Override
     public void extensionStart(
@@ -51,9 +51,9 @@ public class DnsDiscoveryExtensionMain implements ExtensionMain {
             final DnsDiscoveryConfigExtended extendedConfig = DnsDiscoveryConfigExtended.createInstance(dnsFileConfig);
             final DnsDiscoveryMetrics metrics = new DnsDiscoveryMetrics(Services.metricRegistry());
 
-            dnsClusterDiscoveryCallback = new DnsClusterDiscoveryCallback(extendedConfig, metrics);
+            dnsDiscoveryCallback = new DnsDiscoveryCallback(extendedConfig, metrics);
 
-            Services.clusterService().addDiscoveryCallback(dnsClusterDiscoveryCallback);
+            Services.clusterService().addDiscoveryCallback(dnsDiscoveryCallback);
         } catch (final ConfigurationException e) {
             extensionStartOutput.preventExtensionStartup("Error while reading the configuration" +
                     ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
@@ -67,8 +67,8 @@ public class DnsDiscoveryExtensionMain implements ExtensionMain {
     public void extensionStop(
             final @NotNull ExtensionStopInput extensionStopInput,
             final @NotNull ExtensionStopOutput extensionStopOutput) {
-        if (dnsClusterDiscoveryCallback != null) {
-            Services.clusterService().removeDiscoveryCallback(dnsClusterDiscoveryCallback);
+        if (dnsDiscoveryCallback != null) {
+            Services.clusterService().removeDiscoveryCallback(dnsDiscoveryCallback);
         }
     }
 }
