@@ -16,7 +16,6 @@
 package com.hivemq.extensions.cluster.discovery.dns.configuration;
 
 import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extensions.cluster.discovery.dns.exception.ConfigurationException;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
