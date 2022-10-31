@@ -23,11 +23,11 @@ import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopOutput;
 import com.hivemq.extension.sdk.api.services.Services;
-import com.hivemq.extensions.cluster.discovery.dns.callbacks.DnsClusterDiscovery;
+import com.hivemq.extensions.cluster.discovery.dns.callbacks.DnsClusterDiscoveryCallback;
+import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationException;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationFileReader;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigExtended;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigFile;
-import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationException;
 import com.hivemq.extensions.cluster.discovery.dns.metrics.DnsDiscoveryMetrics;
 
 import java.io.File;
@@ -39,7 +39,7 @@ import java.io.File;
  */
 public class DnsDiscoveryExtensionMain implements ExtensionMain {
 
-    private @Nullable DnsClusterDiscovery dnsClusterDiscovery;
+    private @Nullable DnsClusterDiscoveryCallback dnsClusterDiscoveryCallback;
 
     @Override
     public void extensionStart(
@@ -52,9 +52,9 @@ public class DnsDiscoveryExtensionMain implements ExtensionMain {
             final DnsDiscoveryConfigExtended extendedConfig = DnsDiscoveryConfigExtended.createInstance(dnsFileConfig);
             final DnsDiscoveryMetrics metrics = new DnsDiscoveryMetrics(Services.metricRegistry());
 
-            dnsClusterDiscovery = new DnsClusterDiscovery(extendedConfig, metrics);
+            dnsClusterDiscoveryCallback = new DnsClusterDiscoveryCallback(extendedConfig, metrics);
 
-            Services.clusterService().addDiscoveryCallback(dnsClusterDiscovery);
+            Services.clusterService().addDiscoveryCallback(dnsClusterDiscoveryCallback);
         } catch (final ConfigurationException e) {
             extensionStartOutput.preventExtensionStartup("Error while reading the configuration" +
                     ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
@@ -68,8 +68,8 @@ public class DnsDiscoveryExtensionMain implements ExtensionMain {
     public void extensionStop(
             final @NotNull ExtensionStopInput extensionStopInput,
             final @NotNull ExtensionStopOutput extensionStopOutput) {
-        if (dnsClusterDiscovery != null) {
-            Services.clusterService().removeDiscoveryCallback(dnsClusterDiscovery);
+        if (dnsClusterDiscoveryCallback != null) {
+            Services.clusterService().removeDiscoveryCallback(dnsClusterDiscoveryCallback);
         }
     }
 }

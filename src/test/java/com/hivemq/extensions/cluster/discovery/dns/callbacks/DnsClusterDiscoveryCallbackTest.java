@@ -35,11 +35,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-class DnsClusterDiscoveryTest {
+class DnsClusterDiscoveryCallbackTest {
 
     private final @NotNull ClusterNodeAddress cla = new ClusterNodeAddress("localhost", 1883);
 
-    private @NotNull DnsClusterDiscovery dnsClusterDiscovery;
+    private @NotNull DnsClusterDiscoveryCallback dnsClusterDiscoveryCallback;
     private @NotNull ClusterDiscoveryInput input;
     private @NotNull ClusterDiscoveryOutput output;
 
@@ -58,18 +58,18 @@ class DnsClusterDiscoveryTest {
         when(configuration.getResolutionTimeout()).thenReturn(30);
         when(configuration.getReloadInterval()).thenReturn(60);
 
-        dnsClusterDiscovery = new DnsClusterDiscovery(configuration, metrics);
+        dnsClusterDiscoveryCallback = new DnsClusterDiscoveryCallback(configuration, metrics);
     }
 
     @Test
     void whenInitAndReload_thenAddressIsProvided() {
-        dnsClusterDiscovery.init(input, output);
+        dnsClusterDiscoveryCallback.init(input, output);
 
         final ArgumentCaptor<List<ClusterNodeAddress>> captor = ArgumentCaptor.forClass(List.class);
         verify(output).provideCurrentNodes(captor.capture());
         assertEquals(List.of(new ClusterNodeAddress("212.72.72.12", 1883)), captor.getValue());
 
-        dnsClusterDiscovery.reload(input, output);
+        dnsClusterDiscoveryCallback.reload(input, output);
 
         verify(output, times(2)).provideCurrentNodes(captor.capture());
         assertEquals(List.of(new ClusterNodeAddress("212.72.72.12", 1883)), captor.getValue());
