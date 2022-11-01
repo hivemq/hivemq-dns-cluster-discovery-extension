@@ -49,7 +49,7 @@ class DnsDiscoveryCallbackTest {
         output = mock(ClusterDiscoveryOutput.class);
 
         final DnsDiscoveryMetrics metrics = mock(DnsDiscoveryMetrics.class);
-        when(metrics.getResolutionRequestCounter()).thenReturn(new Counter());
+        when(metrics.getQuerySuccessCount()).thenReturn(new Counter());
 
         final DnsDiscoveryConfigExtended configuration = mock(DnsDiscoveryConfigExtended.class);
         when(configuration.getDnsServerAddress()).thenReturn(Optional.empty());

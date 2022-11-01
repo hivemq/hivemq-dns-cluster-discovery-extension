@@ -101,11 +101,11 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
             final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
             if (clusterNodeAddresses != null) {
                 clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
-                dnsDiscoveryMetrics.getResolutionRequestCounter().inc();
+                dnsDiscoveryMetrics.getQuerySuccessCount().inc();
             }
         } catch (final TimeoutException | InterruptedException e) {
             log.error("Timeout while getting other node addresses");
-            dnsDiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            dnsDiscoveryMetrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }
     }
@@ -148,7 +148,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
             return clusterNodeAddresses;
         } catch (final ExecutionException ex) {
             log.error("Failed to resolve DNS record for address '{}'.", discoveryAddress, ex);
-            dnsDiscoveryMetrics.getResolutionRequestFailedCounter().inc();
+            dnsDiscoveryMetrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }
         return null;

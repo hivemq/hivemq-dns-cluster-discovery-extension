@@ -43,7 +43,7 @@ class DnsDiscoveryMetricsTest {
 
     @Test
     void test_resolutionRequestCounter() {
-        final Counter counter = metrics.getResolutionRequestCounter();
+        final Counter counter = metrics.getQuerySuccessCount();
         counter.inc();
         final String name = HIVEMQ_PREFIX + "." + DNS_DISCOVERY_EXTENSION + "." + "query.success.count";
         final Counter counterFromRegistry = metricRegistry.counter(name);
@@ -52,7 +52,7 @@ class DnsDiscoveryMetricsTest {
 
     @Test
     void test_resolutionRequestCounterFailed() {
-        final Counter counter = metrics.getResolutionRequestFailedCounter();
+        final Counter counter = metrics.getQueryFailedCount();
         counter.inc();
         final String name = HIVEMQ_PREFIX + "." + DNS_DISCOVERY_EXTENSION + "." + "query.failed.count";
         final Counter counterFromRegistry = metricRegistry.counter(name);

@@ -29,25 +29,25 @@ class DnsDiscoveryMetrics {
     static final @NotNull String HIVEMQ_PREFIX = "com.hivemq";
 
     private final @NotNull MetricRegistry metricRegistry;
-    private final @NotNull Counter connectCounter;
-    private final @NotNull Counter failedConnectCounter;
+    private final @NotNull Counter querySuccessCount;
+    private final @NotNull Counter queryFailedCount;
 
     DnsDiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
-        this.connectCounter = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
+        querySuccessCount = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
                 DNS_DISCOVERY_EXTENSION,
                 "query.success.count"));
-        this.failedConnectCounter = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
+        queryFailedCount = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
                 DNS_DISCOVERY_EXTENSION,
                 "query.failed.count"));
     }
 
-    @NotNull Counter getResolutionRequestCounter() {
-        return connectCounter;
+    @NotNull Counter getQuerySuccessCount() {
+        return querySuccessCount;
     }
 
-    @NotNull Counter getResolutionRequestFailedCounter() {
-        return failedConnectCounter;
+    @NotNull Counter getQueryFailedCount() {
+        return queryFailedCount;
     }
 
     void registerAddressCountGauge(final @NotNull Gauge<Integer> supplier) {
