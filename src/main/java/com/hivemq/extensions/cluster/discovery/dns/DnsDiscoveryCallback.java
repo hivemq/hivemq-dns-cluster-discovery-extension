@@ -54,8 +54,8 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
 
     private static final @NotNull Logger log = LoggerFactory.getLogger(DnsDiscoveryCallback.class);
 
-    private final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration;
-    private final @NotNull DnsDiscoveryMetrics dnsDiscoveryMetrics;
+    private final @NotNull DnsDiscoveryConfigExtended configuration;
+    private final @NotNull DnsDiscoveryMetrics metrics;
     private final @NotNull NioEventLoopGroup eventLoopGroup;
     private final @NotNull InetAddressValidator addressValidator;
 
@@ -64,14 +64,13 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
     private @Nullable ClusterNodeAddress ownAddress;
 
     DnsDiscoveryCallback(
-            final @NotNull DnsDiscoveryConfigExtended discoveryConfiguration,
-            final @NotNull DnsDiscoveryMetrics dnsDiscoveryMetrics) {
+            final @NotNull DnsDiscoveryConfigExtended configuration, final @NotNull DnsDiscoveryMetrics metrics) {
         this.eventLoopGroup = new NioEventLoopGroup();
         this.addressValidator = InetAddressValidator.getInstance();
-        this.discoveryConfiguration = discoveryConfiguration;
-        this.dnsDiscoveryMetrics = dnsDiscoveryMetrics;
+        this.configuration = configuration;
+        this.metrics = metrics;
 
-        dnsDiscoveryMetrics.registerAddressCountGauge(addressesCount::get);
+        metrics.registerAddressCountGauge(addressesCount::get);
     }
 
     @Override
@@ -79,7 +78,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
             final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
             final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         ownAddress = clusterDiscoveryInput.getOwnAddress();
-        clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.getReloadInterval());
+        clusterDiscoveryOutput.setReloadInterval(configuration.getReloadInterval());
         loadClusterNodeAddresses(clusterDiscoveryOutput);
     }
 
@@ -88,7 +87,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
             final @NotNull ClusterDiscoveryInput clusterDiscoveryInput,
             final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         loadClusterNodeAddresses(clusterDiscoveryOutput);
-        clusterDiscoveryOutput.setReloadInterval(discoveryConfiguration.getReloadInterval());
+        clusterDiscoveryOutput.setReloadInterval(configuration.getReloadInterval());
     }
 
     @Override
@@ -101,23 +100,23 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
             final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
             if (clusterNodeAddresses != null) {
                 clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
-                dnsDiscoveryMetrics.getQuerySuccessCount().inc();
+                metrics.getQuerySuccessCount().inc();
             }
         } catch (final TimeoutException | InterruptedException e) {
             log.error("Timeout while getting other node addresses");
-            dnsDiscoveryMetrics.getQueryFailedCount().inc();
+            metrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }
     }
 
     private @Nullable List<ClusterNodeAddress> loadOtherNodes() throws TimeoutException, InterruptedException {
 
-        final Optional<String> discoveryAddress = discoveryConfiguration.getDiscoveryAddress();
+        final Optional<String> discoveryAddress = configuration.getDiscoveryAddress();
         if (discoveryAddress.isEmpty()) {
             log.warn("Discovery address not set, skipping dns query.");
             return null;
         }
-        final int discoveryTimeout = discoveryConfiguration.getResolutionTimeout();
+        final int discoveryTimeout = configuration.getResolutionTimeout();
 
         // initialize netty DNS resolver
         final DnsNameResolverBuilder dnsNameResolverBuilder =
@@ -125,7 +124,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
                         .optResourceEnabled(false);
 
         // use custom DNS server address if necessary
-        final Optional<InetSocketAddress> dnsServerAddress = discoveryConfiguration.getDnsServerAddress();
+        final Optional<InetSocketAddress> dnsServerAddress = configuration.getDnsServerAddress();
         dnsServerAddress.ifPresent(inetSocketAddress -> dnsNameResolverBuilder.nameServerProvider(new SingletonDnsServerAddressStreamProvider(
                 inetSocketAddress)));
 
@@ -148,7 +147,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
             return clusterNodeAddresses;
         } catch (final ExecutionException ex) {
             log.error("Failed to resolve DNS record for address '{}'.", discoveryAddress, ex);
-            dnsDiscoveryMetrics.getQueryFailedCount().inc();
+            metrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }
         return null;
