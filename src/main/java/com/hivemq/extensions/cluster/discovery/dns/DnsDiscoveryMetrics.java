@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hivemq.extensions.cluster.discovery.dns.metrics;
+package com.hivemq.extensions.cluster.discovery.dns;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -23,7 +23,7 @@ import com.hivemq.extension.sdk.api.annotations.NotNull;
 /**
  * @author Lukas Brand
  */
-public class DnsDiscoveryMetrics {
+class DnsDiscoveryMetrics {
 
     static final @NotNull String DNS_DISCOVERY_EXTENSION = "dns-cluster-discovery-extension";
     static final @NotNull String HIVEMQ_PREFIX = "com.hivemq";
@@ -32,7 +32,7 @@ public class DnsDiscoveryMetrics {
     private final @NotNull Counter connectCounter;
     private final @NotNull Counter failedConnectCounter;
 
-    public DnsDiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
+    DnsDiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
         this.connectCounter = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
                 DNS_DISCOVERY_EXTENSION,
@@ -42,15 +42,15 @@ public class DnsDiscoveryMetrics {
                 "query.failed.count"));
     }
 
-    public @NotNull Counter getResolutionRequestCounter() {
+    @NotNull Counter getResolutionRequestCounter() {
         return connectCounter;
     }
 
-    public @NotNull Counter getResolutionRequestFailedCounter() {
+    @NotNull Counter getResolutionRequestFailedCounter() {
         return failedConnectCounter;
     }
 
-    public void registerAddressCountGauge(final @NotNull Gauge<Integer> supplier) {
+    void registerAddressCountGauge(final @NotNull Gauge<Integer> supplier) {
         metricRegistry.gauge(MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "resolved-addresses"),
                 () -> supplier);
     }

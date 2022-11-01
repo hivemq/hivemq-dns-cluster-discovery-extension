@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.hivemq.extensions.cluster.discovery.dns.metrics;
+package com.hivemq.extensions.cluster.discovery.dns;
 
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
@@ -26,8 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import static com.hivemq.extensions.cluster.discovery.dns.metrics.DnsDiscoveryMetrics.DNS_DISCOVERY_EXTENSION;
-import static com.hivemq.extensions.cluster.discovery.dns.metrics.DnsDiscoveryMetrics.HIVEMQ_PREFIX;
+import static com.hivemq.extensions.cluster.discovery.dns.DnsDiscoveryMetrics.DNS_DISCOVERY_EXTENSION;
+import static com.hivemq.extensions.cluster.discovery.dns.DnsDiscoveryMetrics.HIVEMQ_PREFIX;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DnsDiscoveryMetricsTest {

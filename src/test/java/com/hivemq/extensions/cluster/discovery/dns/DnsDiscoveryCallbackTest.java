@@ -21,7 +21,6 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryI
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigExtended;
-import com.hivemq.extensions.cluster.discovery.dns.metrics.DnsDiscoveryMetrics;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;

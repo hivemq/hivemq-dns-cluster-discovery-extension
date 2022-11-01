@@ -27,7 +27,6 @@ import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationEx
 import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationFileReader;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigExtended;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigFile;
-import com.hivemq.extensions.cluster.discovery.dns.metrics.DnsDiscoveryMetrics;
 
 import java.io.File;
 

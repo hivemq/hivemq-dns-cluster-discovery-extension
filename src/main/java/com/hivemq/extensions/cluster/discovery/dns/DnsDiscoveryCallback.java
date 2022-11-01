@@ -22,7 +22,6 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryI
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigExtended;
-import com.hivemq.extensions.cluster.discovery.dns.metrics.DnsDiscoveryMetrics;
 import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.resolver.dns.DnsNameResolver;

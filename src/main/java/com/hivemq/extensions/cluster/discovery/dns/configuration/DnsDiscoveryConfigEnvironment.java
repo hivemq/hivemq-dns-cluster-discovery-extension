@@ -23,7 +23,7 @@ import com.hivemq.extension.sdk.api.annotations.Nullable;
  *
  * @author Lukas Brand
  */
-public class DnsDiscoveryConfigEnvironment {
+class DnsDiscoveryConfigEnvironment {
 
     static final @NotNull String DNS_SERVER_ADDRESS = "HIVEMQ_DNS_SERVER_ADDRESS";
     static final @NotNull String DISCOVERY_ADDRESS_ENV = "HIVEMQ_DNS_DISCOVERY_ADDRESS";
