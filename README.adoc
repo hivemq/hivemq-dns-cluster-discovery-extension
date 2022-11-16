@@ -42,7 +42,7 @@ If it does not exist, the extension will not attempt to reload the properties an
 |Environment Variable |Default value |property key |Meaning
 |HIVEMQ_DNS_DISCOVERY_ADDRESS |- |discoveryAddress |Address providing the A record for the usage as cluster node addresses
 |HIVEMQ_DNS_DISCOVERY_TIMEOUT |30 |resolutionTimeout |Wait time for DNS resolution to complete
-| HIVEMQ_DNS_RELOAD_INTERVAL | 30 | reloadInterval | Reload interval for updating the addresses of all HiveMQ cluster nodes. |
+|HIVEMQ_DNS_RELOAD_INTERVAL | 30 | reloadInterval | Reload interval for updating the addresses of all HiveMQ cluster nodes. |
 |=======================================================================
 
 == Metrics
