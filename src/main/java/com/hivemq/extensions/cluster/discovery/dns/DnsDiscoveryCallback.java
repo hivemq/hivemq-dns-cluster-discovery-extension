@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,6 +42,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.hivemq.extensions.cluster.discovery.dns.ExtensionConstants.EXTENSION_NAME;
@@ -62,6 +64,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
     private final @NotNull InetAddressValidator addressValidator;
 
     private final @NotNull AtomicInteger addressesCount = new AtomicInteger(0);
+    private final @NotNull AtomicReference<List<String>> foundHostsRef = new AtomicReference<>(List.of());
 
     private @Nullable ClusterNodeAddress ownAddress;
 
@@ -135,7 +138,6 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
                 inetSocketAddress)));
 
         try (final DnsNameResolver resolver = dnsNameResolverBuilder.build()) {
-
             final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress.get());
             final List<ClusterNodeAddress> clusterNodeAddresses =
                     addresses.get(discoveryTimeout, TimeUnit.SECONDS)
@@ -147,9 +149,21 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
                             .map((address) -> new ClusterNodeAddress(address.getHostAddress(), ownAddress.getPort()))
                             .collect(Collectors.toList());
 
-            clusterNodeAddresses.forEach((address) -> log.debug("{}: Found address: '{}'",
-                    EXTENSION_NAME,
-                    address.getHost()));
+            final List<String> foundHosts = new ArrayList<>();
+            final List<String> lastFoundHosts = foundHostsRef.get();
+            clusterNodeAddresses.forEach((address) -> {
+                final String host = address.getHost();
+                foundHosts.add(host);
+                if (!lastFoundHosts.contains(host)) {
+                    log.debug("{}: Discovered new address '{}'.", EXTENSION_NAME, host);
+                }
+            });
+            lastFoundHosts.forEach(host -> {
+                if (!foundHosts.contains(host)) {
+                    log.debug("{}: Discovered address '{}' is gone.", EXTENSION_NAME, host);
+                }
+            });
+            foundHostsRef.set(foundHosts);
             addressesCount.set(clusterNodeAddresses.size());
 
             return clusterNodeAddresses;
