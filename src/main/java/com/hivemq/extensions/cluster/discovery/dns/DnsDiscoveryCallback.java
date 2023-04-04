@@ -113,6 +113,9 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
     }
 
     private @Nullable List<ClusterNodeAddress> loadOtherNodes() throws TimeoutException, InterruptedException {
+        if (ownAddress == null) {
+            return null;
+        }
 
         final Optional<String> discoveryAddress = configuration.getDiscoveryAddress();
         if (discoveryAddress.isEmpty()) {
