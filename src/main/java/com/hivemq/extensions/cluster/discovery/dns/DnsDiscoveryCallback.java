@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -41,7 +42,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+
+import static com.hivemq.extensions.cluster.discovery.dns.ExtensionConstants.EXTENSION_NAME;
 
 /**
  * Cluster discovery using DNS resolution of round-robin A records.
@@ -60,11 +64,13 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
     private final @NotNull InetAddressValidator addressValidator;
 
     private final @NotNull AtomicInteger addressesCount = new AtomicInteger(0);
+    private final @NotNull AtomicReference<List<String>> foundHostsRef = new AtomicReference<>(List.of());
 
     private @Nullable ClusterNodeAddress ownAddress;
 
     DnsDiscoveryCallback(
-            final @NotNull DnsDiscoveryConfigExtended configuration, final @NotNull DnsDiscoveryMetrics metrics) {
+            final @NotNull DnsDiscoveryConfigExtended configuration,
+            final @NotNull DnsDiscoveryMetrics metrics) {
         this.eventLoopGroup = new NioEventLoopGroup();
         this.addressValidator = InetAddressValidator.getInstance();
         this.configuration = configuration;
@@ -103,17 +109,20 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
                 metrics.getQuerySuccessCount().inc();
             }
         } catch (final TimeoutException | InterruptedException e) {
-            log.error("Timeout while getting other node addresses");
+            log.error("{}: Timeout while getting other node addresses.", EXTENSION_NAME);
             metrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }
     }
 
     private @Nullable List<ClusterNodeAddress> loadOtherNodes() throws TimeoutException, InterruptedException {
+        if (ownAddress == null) {
+            return null;
+        }
 
         final Optional<String> discoveryAddress = configuration.getDiscoveryAddress();
         if (discoveryAddress.isEmpty()) {
-            log.warn("Discovery address not set, skipping dns query.");
+            log.warn("{}: Discovery address not set, skipping DNS query.", EXTENSION_NAME);
             return null;
         }
         final int discoveryTimeout = configuration.getResolutionTimeout();
@@ -129,24 +138,37 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
                 inetSocketAddress)));
 
         try (final DnsNameResolver resolver = dnsNameResolverBuilder.build()) {
-
             final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress.get());
             final List<ClusterNodeAddress> clusterNodeAddresses =
                     addresses.get(discoveryTimeout, TimeUnit.SECONDS)
                             .stream()
-                            // Skip any possibly unresolved elements
+                            // skip any possibly unresolved elements
                             .filter(Objects::nonNull)
-                            // Check if the discoveryAddress address we got from the DNS is a valid IP address
+                            // check if the discoveryAddress address we got from the DNS is a valid IP address
                             .filter((address) -> addressValidator.isValid(address.getHostAddress()))
                             .map((address) -> new ClusterNodeAddress(address.getHostAddress(), ownAddress.getPort()))
                             .collect(Collectors.toList());
 
-            clusterNodeAddresses.forEach((address) -> log.debug("Found address: '{}'", address.getHost()));
+            final List<String> foundHosts = new ArrayList<>();
+            final List<String> lastFoundHosts = foundHostsRef.get();
+            clusterNodeAddresses.forEach((address) -> {
+                final String host = address.getHost();
+                foundHosts.add(host);
+                if (!lastFoundHosts.contains(host)) {
+                    log.debug("{}: Discovered new address '{}'.", EXTENSION_NAME, host);
+                }
+            });
+            lastFoundHosts.forEach(host -> {
+                if (!foundHosts.contains(host)) {
+                    log.debug("{}: Discovered address '{}' is gone.", EXTENSION_NAME, host);
+                }
+            });
+            foundHostsRef.set(foundHosts);
             addressesCount.set(clusterNodeAddresses.size());
 
             return clusterNodeAddresses;
         } catch (final ExecutionException ex) {
-            log.error("Failed to resolve DNS record for address '{}'.", discoveryAddress, ex);
+            log.error("{}: Failed to resolve DNS record for address '{}'.", EXTENSION_NAME, discoveryAddress, ex);
             metrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }

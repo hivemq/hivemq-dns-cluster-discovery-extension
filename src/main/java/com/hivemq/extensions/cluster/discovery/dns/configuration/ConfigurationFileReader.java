@@ -41,7 +41,7 @@ public class ConfigurationFileReader {
     }
 
     /**
-     * Method that loads and reloads the configuration for the dns discovery properties, by (re)creating the
+     * Method that loads and reloads the configuration for the DNS discovery properties, by (re)creating the
      * configuration.
      *
      * @return DnsDiscoveryConfigFile The configuration from the config file or default values.
