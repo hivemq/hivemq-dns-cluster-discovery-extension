@@ -31,7 +31,7 @@ import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryCon
 import java.io.File;
 
 /**
- * This is the main class of the dns discovery extension, which is instantiated during the HiveMQ start up process.
+ * This is the main class of the DNS discovery extension, which is instantiated during the HiveMQ start up process.
  *
  * @author Anja Helmbrecht-Schaar
  */
