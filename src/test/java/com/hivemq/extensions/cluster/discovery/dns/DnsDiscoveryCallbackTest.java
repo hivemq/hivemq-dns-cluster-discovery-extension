@@ -53,7 +53,7 @@ class DnsDiscoveryCallbackTest {
 
         final DnsDiscoveryConfigExtended configuration = mock(DnsDiscoveryConfigExtended.class);
         when(configuration.getDnsServerAddress()).thenReturn(Optional.empty());
-        when(configuration.getDiscoveryAddress()).thenReturn(Optional.of("www.hivemq.com"));
+        when(configuration.getDiscoveryAddress()).thenReturn(Optional.of("172.16.16.1"));
         when(configuration.getResolutionTimeout()).thenReturn(30);
         when(configuration.getReloadInterval()).thenReturn(60);
 
@@ -66,11 +66,11 @@ class DnsDiscoveryCallbackTest {
 
         final ArgumentCaptor<List<ClusterNodeAddress>> captor = ArgumentCaptor.forClass(List.class);
         verify(output).provideCurrentNodes(captor.capture());
-        assertEquals(List.of(new ClusterNodeAddress("212.72.72.12", 1883)), captor.getValue());
+        assertEquals(List.of(new ClusterNodeAddress("172.16.16.1", 1883)), captor.getValue());
 
         dnsDiscoveryCallback.reload(input, output);
 
         verify(output, times(2)).provideCurrentNodes(captor.capture());
-        assertEquals(List.of(new ClusterNodeAddress("212.72.72.12", 1883)), captor.getValue());
+        assertEquals(List.of(new ClusterNodeAddress("172.16.16.1", 1883)), captor.getValue());
     }
 }
