@@ -35,32 +35,32 @@ tasks.asciidoctor {
     secondarySources { exclude("**") }
 }
 
-/* ******************** test ******************** */
-
-dependencies {
-    testImplementation(libs.junit.jupiter)
-    testImplementation(libs.mockito)
-    testImplementation(libs.mockito.junitJupiter)
-    testRuntimeOnly(libs.logback.classic)
+@Suppress("UnstableApiUsage")
+testing {
+    suites {
+        withType<JvmTestSuite> {
+            useJUnitJupiter(libs.versions.junit.jupiter)
+        }
+        "test"(JvmTestSuite::class) {
+            dependencies {
+                implementation(libs.mockito)
+                implementation(libs.mockito.junitJupiter)
+                runtimeOnly(libs.logback.classic)
+            }
+        }
+        "integrationTest"(JvmTestSuite::class) {
+            dependencies {
+                compileOnly(libs.jetbrains.annotations)
+                implementation(platform(libs.testcontainers.bom))
+                implementation(libs.testcontainers)
+                implementation(libs.testcontainers.hivemq)
+                implementation(libs.apacheDS.dns)
+                implementation(libs.okhttp)
+                runtimeOnly(libs.logback.classic)
+            }
+        }
+    }
 }
-
-tasks.withType<Test>().configureEach {
-    useJUnitPlatform()
-}
-
-/* ******************** integration test ******************** */
-
-dependencies {
-    integrationTestCompileOnly(libs.jetbrains.annotations)
-    integrationTestImplementation(platform(libs.testcontainers.bom))
-    integrationTestImplementation(libs.testcontainers)
-    integrationTestImplementation(libs.testcontainers.hivemq)
-    integrationTestImplementation(libs.apacheDS.dns)
-    integrationTestImplementation(libs.okhttp)
-    integrationTestRuntimeOnly(libs.logback.classic)
-}
-
-/* ******************** checks ******************** */
 
 license {
     header = rootDir.resolve("HEADER")
