@@ -22,7 +22,6 @@ netty-resolver-dns = { module = "io.netty:netty-resolver-dns", version.ref = "ne
 okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 owner = { module = "org.aeonbits.owner:owner", version.ref = "owner" }
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
-testcontainers-bom = { module = "org.testcontainers:testcontainers-bom", version.ref = "testcontainers" }
 testcontainers-hivemq = { module = "org.testcontainers:hivemq", version.ref = "testcontainers" }
 
 [plugins]

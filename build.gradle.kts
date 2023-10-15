@@ -51,7 +51,6 @@ testing {
         "integrationTest"(JvmTestSuite::class) {
             dependencies {
                 compileOnly(libs.jetbrains.annotations)
-                implementation(platform(libs.testcontainers.bom))
                 implementation(libs.testcontainers)
                 implementation(libs.testcontainers.hivemq)
                 implementation(libs.apacheDS.dns)
