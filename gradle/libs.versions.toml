@@ -7,7 +7,7 @@ junit-jupiter = "5.10.0"
 logback = "1.4.4"
 mockito = "4.8.1"
 netty = "4.1.80.Final"
-okhttp = "4.10.0"
+okhttp = "4.11.0"
 owner = "1.0.12"
 testcontainers = "1.19.1"
 
