@@ -15,10 +15,10 @@
  */
 package com.hivemq.extensions.cluster.discovery.dns;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
+import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
