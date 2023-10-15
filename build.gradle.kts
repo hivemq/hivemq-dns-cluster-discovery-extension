@@ -51,11 +51,13 @@ tasks.withType<Test>().configureEach {
 /* ******************** integration test ******************** */
 
 dependencies {
+    integrationTestCompileOnly("org.jetbrains:annotations:${property("jetbrains-annotations.version")}")
     integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${property("testcontainers.version")}"))
     integrationTestImplementation("org.testcontainers:testcontainers")
     integrationTestImplementation("org.testcontainers:hivemq")
     integrationTestImplementation("org.apache.directory.server:apacheds-protocol-dns:${property("apache-dns.version")}")
     integrationTestImplementation("com.squareup.okhttp3:okhttp:${property("ok-http.version")}")
+    integrationTestRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
 }
 
 /* ******************** checks ******************** */
