@@ -2,7 +2,6 @@ plugins {
     alias(libs.plugins.hivemq.extension)
     alias(libs.plugins.defaults)
     alias(libs.plugins.license)
-    alias(libs.plugins.asciidoctor)
 }
 
 group = "com.hivemq.extensions"
@@ -17,9 +16,6 @@ hivemqExtension {
 
     resources {
         from("LICENSE")
-        from("README.adoc") { rename { "README.txt" } }
-        from("dns-discovery-diagram.png")
-        from(tasks.asciidoctor)
     }
 }
 
@@ -27,12 +23,6 @@ dependencies {
     implementation(libs.owner)
     implementation(libs.netty.resolver.dns)
     implementation(libs.commonsValidator)
-}
-
-tasks.asciidoctor {
-    sourceDirProperty.set(layout.projectDirectory)
-    sources("README.adoc")
-    secondarySources { exclude("**") }
 }
 
 @Suppress("UnstableApiUsage")
