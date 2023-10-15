@@ -1,8 +1,8 @@
 plugins {
-    id("com.hivemq.extension")
-    id("com.github.hierynomus.license")
-    id("io.github.sgtsilvio.gradle.defaults")
-    id("org.asciidoctor.jvm.convert")
+    alias(libs.plugins.hivemq.extension)
+    alias(libs.plugins.defaults)
+    alias(libs.plugins.license)
+    alias(libs.plugins.asciidoctor)
 }
 
 group = "com.hivemq.extensions"
@@ -13,7 +13,7 @@ hivemqExtension {
     author.set("HiveMQ")
     priority.set(1000)
     startPriority.set(10000)
-    sdkVersion.set("${property("hivemq-extension-sdk.version")}")
+    sdkVersion.set(libs.versions.hivemq.extensionSdk)
 
     resources {
         from("LICENSE")
@@ -24,9 +24,9 @@ hivemqExtension {
 }
 
 dependencies {
-    implementation("org.aeonbits.owner:owner:${property("owner.version")}")
-    implementation("io.netty:netty-resolver-dns:${property("netty.version")}")
-    implementation("commons-validator:commons-validator:${property("commons-validator.version")}")
+    implementation(libs.owner)
+    implementation(libs.netty.resolver.dns)
+    implementation(libs.commonsValidator)
 }
 
 tasks.asciidoctor {
@@ -38,10 +38,10 @@ tasks.asciidoctor {
 /* ******************** test ******************** */
 
 dependencies {
-    testImplementation("org.junit.jupiter:junit-jupiter:${property("junit-jupiter.version")}")
-    testImplementation("org.mockito:mockito-core:${property("mockito.version")}")
-    testImplementation("org.mockito:mockito-junit-jupiter:${property("mockito.version")}")
-    testRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
+    testImplementation(libs.junit.jupiter)
+    testImplementation(libs.mockito)
+    testImplementation(libs.mockito.junitJupiter)
+    testRuntimeOnly(libs.logback.classic)
 }
 
 tasks.withType<Test>().configureEach {
@@ -51,13 +51,13 @@ tasks.withType<Test>().configureEach {
 /* ******************** integration test ******************** */
 
 dependencies {
-    integrationTestCompileOnly("org.jetbrains:annotations:${property("jetbrains-annotations.version")}")
-    integrationTestImplementation(platform("org.testcontainers:testcontainers-bom:${property("testcontainers.version")}"))
-    integrationTestImplementation("org.testcontainers:testcontainers")
-    integrationTestImplementation("org.testcontainers:hivemq")
-    integrationTestImplementation("org.apache.directory.server:apacheds-protocol-dns:${property("apache-dns.version")}")
-    integrationTestImplementation("com.squareup.okhttp3:okhttp:${property("ok-http.version")}")
-    integrationTestRuntimeOnly("ch.qos.logback:logback-classic:${property("logback.version")}")
+    integrationTestCompileOnly(libs.jetbrains.annotations)
+    integrationTestImplementation(platform(libs.testcontainers.bom))
+    integrationTestImplementation(libs.testcontainers)
+    integrationTestImplementation(libs.testcontainers.hivemq)
+    integrationTestImplementation(libs.apacheDS.dns)
+    integrationTestImplementation(libs.okhttp)
+    integrationTestRuntimeOnly(libs.logback.classic)
 }
 
 /* ******************** checks ******************** */
