@@ -15,7 +15,6 @@ testcontainers = "1.17.5"
 apacheDS-dns = { module = "org.apache.directory.server:apacheds-protocol-dns", version.ref = "apacheDS" }
 commonsValidator = { module = "commons-validator:commons-validator", version.ref = "commonsValidator" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
-junit-jupiter = { module = "org.junit.jupiter:junit-jupiter", version.ref = "junit-jupiter" }
 logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "logback" }
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junitJupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
