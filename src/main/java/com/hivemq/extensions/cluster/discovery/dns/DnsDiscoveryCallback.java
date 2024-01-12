@@ -167,8 +167,8 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
             addressesCount.set(clusterNodeAddresses.size());
 
             return clusterNodeAddresses;
-        } catch (final ExecutionException ex) {
-            log.error("{}: Failed to resolve DNS record for address '{}'.", EXTENSION_NAME, discoveryAddress, ex);
+        } catch (final ExecutionException e) {
+            log.error("{}: Failed to resolve DNS record for address '{}'.", EXTENSION_NAME, discoveryAddress);
             metrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }
