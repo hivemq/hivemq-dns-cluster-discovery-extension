@@ -50,7 +50,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This Class was inspired by the Netty Project:
+ * This Class was inspired by the Netty Project.
  *
  * @author Lukas Brand
  * @see <a
@@ -75,7 +75,6 @@ class TestDnsServer extends DnsServer {
         setTransports(transport);
 
         final DatagramAcceptor acceptor = transport.getAcceptor();
-
         acceptor.setHandler(new DnsProtocolHandler(this, store) {
             @Override
             public void sessionCreated(final @NotNull IoSession session) {
@@ -83,10 +82,9 @@ class TestDnsServer extends DnsServer {
                         .addFirst("codec", new ProtocolCodecFilter(new TestDnsProtocolUdpCodecFactory()));
             }
         });
-
         acceptor.getSessionConfig().setReuseAddress(true);
 
-        // Start the listener
+        // start the listener
         acceptor.bind();
     }
 
@@ -106,7 +104,6 @@ class TestDnsServer extends DnsServer {
                         final @NotNull IoSession session,
                         final @NotNull Object message,
                         final @NotNull ProtocolEncoderOutput out) {
-
                     final IoBuffer buf = IoBuffer.allocate(1024);
                     final DnsMessage dnsMessage = (DnsMessage) message;
                     encoder.encode(buf, dnsMessage);
@@ -126,7 +123,6 @@ class TestDnsServer extends DnsServer {
                         final @NotNull IoSession session,
                         final @NotNull IoBuffer in,
                         final @NotNull ProtocolDecoderOutput out) throws IOException {
-
                     final DnsMessage message = decoder.decode(in);
                     out.write(message);
                 }
@@ -170,11 +166,10 @@ class TestDnsServer extends DnsServer {
                 final @NotNull String domainName,
                 final @NotNull RecordType recordType,
                 final @NotNull Map<String, Object> attributes) {
-
             super(domainName, recordType, RecordClass.IN, 100, attributes);
         }
 
-        //To prevent duplicates of resource records in the set it is used in.
+        // to prevent duplicates of resource records in the set it is used in
         @Override
         public int hashCode() {
             return System.identityHashCode(this);

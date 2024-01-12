@@ -30,7 +30,6 @@ import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -62,7 +61,7 @@ class DnsDiscoveryExtensionIT {
     private @NotNull HiveMQContainer node1;
 
     @BeforeEach
-    void setUp(final @NotNull @TempDir Path extensionTempPath) throws IOException {
+    void setUp(final @NotNull @TempDir Path extensionTempPath) throws Exception {
         testDnsServer = new TestDnsServer(Set.of(DNS_DISCOVERY_ADDRESS), 4);
         testDnsServer.start();
 
@@ -92,7 +91,7 @@ class DnsDiscoveryExtensionIT {
 
     @Test
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
-    void test_metric_success() throws IOException {
+    void test_metric_success() throws Exception {
         node1.start();
 
         final Map<String, Float> metrics = getMetrics();
@@ -103,7 +102,7 @@ class DnsDiscoveryExtensionIT {
 
     @Test
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
-    void test_metric_failure() throws IOException {
+    void test_metric_failure() throws Exception {
         testDnsServer.stop();
         node1.start();
 
@@ -113,8 +112,9 @@ class DnsDiscoveryExtensionIT {
         assertEquals(0, metrics.get(IP_COUNT_METRIC));
     }
 
-    private @NotNull Map<String, Float> getMetrics() throws IOException {
+    private @NotNull Map<String, Float> getMetrics() throws Exception {
         final OkHttpClient client = new OkHttpClient();
+        //noinspection HttpUrlsUsage
         final Request request =
                 new Request.Builder().url("http://" + node1.getHost() + ":" + node1.getMappedPort(9399) + "/metrics")
                         .build();
