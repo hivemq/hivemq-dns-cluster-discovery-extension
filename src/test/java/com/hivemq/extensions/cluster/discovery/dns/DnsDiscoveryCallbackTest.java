@@ -64,6 +64,7 @@ class DnsDiscoveryCallbackTest {
     void whenInitAndReload_thenAddressIsProvided() {
         dnsDiscoveryCallback.init(input, output);
 
+        //noinspection unchecked
         final ArgumentCaptor<List<ClusterNodeAddress>> captor = ArgumentCaptor.forClass(List.class);
         verify(output).provideCurrentNodes(captor.capture());
         assertEquals(List.of(new ClusterNodeAddress("172.16.16.1", 1883)), captor.getValue());
