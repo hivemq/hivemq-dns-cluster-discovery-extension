@@ -35,6 +35,7 @@ import java.io.File;
  *
  * @author Anja Helmbrecht-Schaar
  */
+@SuppressWarnings("unused")
 public class DnsDiscoveryExtensionMain implements ExtensionMain {
 
     private @Nullable DnsDiscoveryCallback dnsDiscoveryCallback;
