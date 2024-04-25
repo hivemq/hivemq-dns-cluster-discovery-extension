@@ -15,8 +15,8 @@
  */
 package com.hivemq.extensions.cluster.discovery.dns.configuration;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
 import org.aeonbits.owner.ConfigFactory;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.FileInputStream;

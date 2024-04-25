@@ -15,8 +15,6 @@
  */
 package com.hivemq.extensions.cluster.discovery.dns;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.services.cluster.ClusterDiscoveryCallback;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryInput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
@@ -29,6 +27,8 @@ import io.netty.resolver.dns.DnsNameResolverBuilder;
 import io.netty.resolver.dns.SingletonDnsServerAddressStreamProvider;
 import io.netty.util.concurrent.Future;
 import org.apache.commons.validator.routines.InetAddressValidator;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,8 +69,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
     private @Nullable ClusterNodeAddress ownAddress;
 
     DnsDiscoveryCallback(
-            final @NotNull DnsDiscoveryConfigExtended configuration,
-            final @NotNull DnsDiscoveryMetrics metrics) {
+            final @NotNull DnsDiscoveryConfigExtended configuration, final @NotNull DnsDiscoveryMetrics metrics) {
         this.eventLoopGroup = new NioEventLoopGroup();
         this.addressValidator = InetAddressValidator.getInstance();
         this.configuration = configuration;

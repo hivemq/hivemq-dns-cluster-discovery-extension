@@ -15,7 +15,7 @@
  */
 package com.hivemq.extensions.cluster.discovery.dns;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 public final class ExtensionConstants {
 

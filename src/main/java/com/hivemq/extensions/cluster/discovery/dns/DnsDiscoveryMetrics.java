@@ -18,7 +18,7 @@ package com.hivemq.extensions.cluster.discovery.dns;
 import com.codahale.metrics.Counter;
 import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
-import com.hivemq.extension.sdk.api.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * @author Lukas Brand

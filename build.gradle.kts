@@ -20,6 +20,8 @@ hivemqExtension {
 }
 
 dependencies {
+    compileOnly(libs.jetbrains.annotations)
+
     implementation(libs.owner)
     implementation(libs.netty.resolver.dns)
     implementation(libs.commonsValidator)
@@ -33,6 +35,7 @@ testing {
         }
         "test"(JvmTestSuite::class) {
             dependencies {
+                compileOnly(libs.jetbrains.annotations)
                 implementation(libs.mockito)
                 implementation(libs.mockito.junitJupiter)
                 runtimeOnly(libs.logback.classic)

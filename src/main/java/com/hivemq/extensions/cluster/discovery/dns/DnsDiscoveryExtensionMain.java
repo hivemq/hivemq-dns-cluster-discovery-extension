@@ -16,8 +16,6 @@
 package com.hivemq.extensions.cluster.discovery.dns;
 
 import com.hivemq.extension.sdk.api.ExtensionMain;
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartInput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStartOutput;
 import com.hivemq.extension.sdk.api.parameter.ExtensionStopInput;
@@ -27,6 +25,8 @@ import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationEx
 import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationFileReader;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigExtended;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigFile;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 

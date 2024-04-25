@@ -15,8 +15,8 @@
  */
 package com.hivemq.extensions.cluster.discovery.dns.configuration;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
-import com.hivemq.extension.sdk.api.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Helper class for environment variables. This is necessary to properly unit test configuration values.
