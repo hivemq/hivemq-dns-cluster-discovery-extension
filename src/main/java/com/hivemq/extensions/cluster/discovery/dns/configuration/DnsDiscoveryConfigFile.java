@@ -15,8 +15,8 @@
  */
 package com.hivemq.extensions.cluster.discovery.dns.configuration;
 
-import com.hivemq.extension.sdk.api.annotations.Nullable;
 import org.aeonbits.owner.Config;
+import org.jetbrains.annotations.Nullable;
 
 @Config.Sources("file:${configFile}")
 public interface DnsDiscoveryConfigFile extends Config {

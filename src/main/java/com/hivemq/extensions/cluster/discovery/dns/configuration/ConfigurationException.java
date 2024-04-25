@@ -15,7 +15,7 @@
  */
 package com.hivemq.extensions.cluster.discovery.dns.configuration;
 
-import com.hivemq.extension.sdk.api.annotations.NotNull;
+import org.jetbrains.annotations.NotNull;
 
 public class ConfigurationException extends RuntimeException {
 
