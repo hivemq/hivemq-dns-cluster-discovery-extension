@@ -1,6 +1,6 @@
 [versions]
 apacheDS = "2.0.0.AM27"
-commonsValidator = "1.8.0"
+commonsValidator = "1.9.0"
 hivemq-extensionSdk = "4.1.0"
 jetbrains-annotations = "24.1.0"
 junit-jupiter = "5.10.0"
