@@ -15,6 +15,7 @@
  */
 package com.hivemq.extensions.cluster.discovery.dns;
 
+import io.github.sgtsilvio.gradle.oci.junit.jupiter.OciImages;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -27,7 +28,6 @@ import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.testcontainers.hivemq.HiveMQContainer;
-import org.testcontainers.utility.DockerImageName;
 import org.testcontainers.utility.MountableFile;
 
 import java.nio.file.Files;
@@ -72,7 +72,7 @@ class DnsDiscoveryExtensionIT {
                         "resolutionTimeout=30\n" + //
                         "reloadInterval=60");
 
-        node1 = new HiveMQContainer(DockerImageName.parse("hivemq/hivemq4").withTag("latest")) //
+        node1 = new HiveMQContainer(OciImages.getImageName("hivemq/hivemq4")) //
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
                 .withExtension(MountableFile.forClasspathResource("hivemq-dns-cluster-discovery"))
                 .withFileInExtensionHomeFolder(MountableFile.forHostPath(dnsConfigFile),
