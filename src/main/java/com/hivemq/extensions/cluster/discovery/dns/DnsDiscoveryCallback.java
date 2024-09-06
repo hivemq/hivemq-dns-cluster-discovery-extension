@@ -119,7 +119,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
             return null;
         }
 
-        final Optional<String> discoveryAddress = configuration.getDiscoveryAddress();
+        final String discoveryAddress = configuration.getDiscoveryAddress().orElse("");
         if (discoveryAddress.isEmpty()) {
             log.warn("{}: Discovery address not set, skipping DNS query.", EXTENSION_NAME);
             return null;
@@ -137,7 +137,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
                 inetSocketAddress)));
 
         try (final DnsNameResolver resolver = dnsNameResolverBuilder.build()) {
-            final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress.get());
+            final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress);
             final List<ClusterNodeAddress> clusterNodeAddresses =
                     addresses.get(discoveryTimeout, TimeUnit.SECONDS)
                             .stream()
@@ -167,7 +167,11 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
 
             return clusterNodeAddresses;
         } catch (final ExecutionException e) {
-            log.error("{}: Failed to resolve DNS record for address '{}'.", EXTENSION_NAME, discoveryAddress);
+            final Throwable rootCause = e.getCause() != null ? e.getCause() : e;
+            log.error("{}: Failed to resolve DNS record for address '{}' (reason: {}).",
+                    EXTENSION_NAME,
+                    discoveryAddress,
+                    rootCause.toString());
             metrics.getQueryFailedCount().inc();
             addressesCount.set(0);
         }
