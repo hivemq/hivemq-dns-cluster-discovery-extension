@@ -30,8 +30,7 @@ After this adapt the properties to your needs as described in the Configuration 
 
 The following environment variables or property keys should be used to customize the discovery parameters.
 
-If a properties file is provided (`dnsdiscovery.properties` in `conf/`
-folder), the extension will use the key-value pairs from this file and reload the values on file changes.
+If a properties file is provided (`dnsdiscovery.properties`), the extension will use the key-value pairs from this file and reload the values on file changes.
 
 The extension will attempt to load the properties file first.
 If it does not exist, the extension will not attempt to reload the properties and instead try to read from the environment variables on each iteration until broker shutdown.
