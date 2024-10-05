@@ -9,7 +9,7 @@ mockito = "5.13.0"
 netty = "4.1.113.Final"
 okhttp = "4.12.0"
 owner = "1.0.12"
-testcontainers = "1.20.1"
+testcontainers = "1.20.2"
 
 [libraries]
 apacheDS-dns = { module = "org.apache.directory.server:apacheds-protocol-dns", version.ref = "apacheDS" }
