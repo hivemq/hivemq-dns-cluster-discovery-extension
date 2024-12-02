@@ -99,7 +99,7 @@ testing {
                 imageDependencies {
                     runtime(project) {
                         capabilities {
-                            requireCapability("$group:$name-integration-test") // TODO requireFeature("integrationTest"), update gradle to 8.11
+                            requireFeature("integration-test")
                         }
                     }.tag("latest")
                 }
