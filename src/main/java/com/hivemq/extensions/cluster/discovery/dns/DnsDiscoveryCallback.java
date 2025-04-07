@@ -20,7 +20,9 @@ import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryI
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterDiscoveryOutput;
 import com.hivemq.extension.sdk.api.services.cluster.parameter.ClusterNodeAddress;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigExtended;
-import io.netty.channel.nio.NioEventLoopGroup;
+import io.netty.channel.EventLoopGroup;
+import io.netty.channel.MultiThreadIoEventLoopGroup;
+import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioDatagramChannel;
 import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
@@ -46,7 +48,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.hivemq.extensions.cluster.discovery.dns.ExtensionConstants.EXTENSION_NAME;
-
 /**
  * Cluster discovery using DNS resolution of round-robin A records.
  * Uses non-blocking netty API for DNS resolution, reads discovery parameters as environment variables.
@@ -60,7 +61,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
 
     private final @NotNull DnsDiscoveryConfigExtended configuration;
     private final @NotNull DnsDiscoveryMetrics metrics;
-    private final @NotNull NioEventLoopGroup eventLoopGroup;
+    private final @NotNull EventLoopGroup eventLoopGroup;
     private final @NotNull InetAddressValidator addressValidator;
 
     private final @NotNull AtomicInteger addressesCount = new AtomicInteger(0);
@@ -70,7 +71,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
 
     DnsDiscoveryCallback(
             final @NotNull DnsDiscoveryConfigExtended configuration, final @NotNull DnsDiscoveryMetrics metrics) {
-        this.eventLoopGroup = new NioEventLoopGroup();
+        this.eventLoopGroup = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
         this.addressValidator = InetAddressValidator.getInstance();
         this.configuration = configuration;
         this.metrics = metrics;
