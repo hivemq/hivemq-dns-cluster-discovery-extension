@@ -129,7 +129,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
 
         // initialize netty DNS resolver
         final DnsNameResolverBuilder dnsNameResolverBuilder =
-                new DnsNameResolverBuilder(eventLoopGroup.next()).channelType(NioDatagramChannel.class)
+                new DnsNameResolverBuilder(eventLoopGroup.next()).datagramChannelType(NioDatagramChannel.class)
                         .optResourceEnabled(false);
 
         // use custom DNS server address if necessary
