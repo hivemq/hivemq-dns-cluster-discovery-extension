@@ -23,10 +23,8 @@ import org.junit.jupiter.api.io.TempDir;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 class ConfigurationFileReaderTest {
 
@@ -41,37 +39,33 @@ class ConfigurationFileReaderTest {
 
     @Test
     void whenNoFile_thenUseDefaults() {
-        final DnsDiscoveryConfigFile config = configurationFileReader.get();
-
-        assertEquals(-1, config.getFileResolutionTimeout());
-        assertNull(config.getFileDiscoveryAddress());
+        final var config = configurationFileReader.get();
+        assertThat(config.getFileResolutionTimeout()).isEqualTo(-1);
+        assertThat(config.getFileDiscoveryAddress()).isNull();
     }
 
     @Test
     void whenConfigIsCorrect_thenUseValues() throws Exception {
         Files.writeString(configPath, "discoveryAddress:task.hivemq\nresolutionTimeout:10");
 
-        final DnsDiscoveryConfigFile config = configurationFileReader.get();
-
-        assertEquals(10, config.getFileResolutionTimeout());
-        assertEquals("task.hivemq", config.getFileDiscoveryAddress());
+        final var config = configurationFileReader.get();
+        assertThat(config.getFileResolutionTimeout()).isEqualTo(10);
+        assertThat(config.getFileDiscoveryAddress()).isEqualTo("task.hivemq");
     }
 
     @Test
     void whenTypoInResolutionTimeout_thenThrowException() throws Exception {
         Files.writeString(configPath, "discoveryAddress:\nresolutionTimeout:30Seconds");
 
-        final UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-                () -> configurationFileReader.get().getFileResolutionTimeout());
-        assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
+        assertThatThrownBy(() -> configurationFileReader.get().getFileResolutionTimeout()).isInstanceOf(
+                UnsupportedOperationException.class).hasMessageContaining("Cannot convert '30Seconds' to int");
     }
 
     @Test
     void whenTypoInReloadInterval_thenThrowException() throws Exception {
         Files.writeString(configPath, "discoveryAddress:\nreloadInterval:30Seconds");
 
-        final UnsupportedOperationException e = assertThrows(UnsupportedOperationException.class,
-                () -> configurationFileReader.get().getFileReloadInterval());
-        assertTrue(e.getMessage().contains("Cannot convert '30Seconds' to int"));
+        assertThatThrownBy(() -> configurationFileReader.get().getFileReloadInterval()).isInstanceOf(
+                UnsupportedOperationException.class).hasMessageContaining("Cannot convert '30Seconds' to int");
     }
 }

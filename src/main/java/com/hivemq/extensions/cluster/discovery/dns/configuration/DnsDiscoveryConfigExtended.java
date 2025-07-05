@@ -51,8 +51,8 @@ public class DnsDiscoveryConfigExtended {
     }
 
     public static @NotNull DnsDiscoveryConfigExtended createInstance(final @NotNull DnsDiscoveryConfigFile configFile) {
-        final DnsDiscoveryConfigEnvironment configEnvironment = new DnsDiscoveryConfigEnvironment();
-        final DnsDiscoveryConfigExtended extendedConfig = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configEnvironment = new DnsDiscoveryConfigEnvironment();
+        final var extendedConfig = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         extendedConfig.dnsServerAddress();
         extendedConfig.discoveryAddress();
         extendedConfig.resolutionTimeout();
@@ -61,7 +61,7 @@ public class DnsDiscoveryConfigExtended {
     }
 
     void dnsServerAddress() {
-        final String envDnsServerAddress = configEnvironment.getEnvDnsServerAddress();
+        final var envDnsServerAddress = configEnvironment.getEnvDnsServerAddress();
         if (envDnsServerAddress != null && !envDnsServerAddress.isBlank()) {
             try {
                 dnsServerAddress = processDnsServerAddress(envDnsServerAddress);
@@ -71,8 +71,7 @@ public class DnsDiscoveryConfigExtended {
             }
         } else {
             try {
-                final String propDnsServerAddress = configFile.getFileDnsServerAddress();
-
+                final var propDnsServerAddress = configFile.getFileDnsServerAddress();
                 if (propDnsServerAddress != null && !propDnsServerAddress.isBlank()) {
                     dnsServerAddress = processDnsServerAddress(propDnsServerAddress);
                 } else {
@@ -88,7 +87,7 @@ public class DnsDiscoveryConfigExtended {
 
     @NotNull InetSocketAddress processDnsServerAddress(final @NotNull String dnsServerAddress) {
         if (dnsServerAddress.contains(":")) {
-            final String address = dnsServerAddress.split(":")[0];
+            final var address = dnsServerAddress.split(":")[0];
             int port;
             try {
                 port = Integer.parseInt(dnsServerAddress.split(":")[1]);
@@ -103,12 +102,12 @@ public class DnsDiscoveryConfigExtended {
     }
 
     void discoveryAddress() {
-        final String envDiscoveryAddress = configEnvironment.getEnvDiscoveryAddress();
+        final var envDiscoveryAddress = configEnvironment.getEnvDiscoveryAddress();
         if (envDiscoveryAddress != null && !envDiscoveryAddress.isEmpty()) {
             discoveryAddress = envDiscoveryAddress;
         } else {
             try {
-                final String propDiscoveryAddress = configFile.getFileDiscoveryAddress();
+                final var propDiscoveryAddress = configFile.getFileDiscoveryAddress();
                 if (propDiscoveryAddress != null && !propDiscoveryAddress.isBlank()) {
                     discoveryAddress = propDiscoveryAddress;
                 } else {
@@ -123,7 +122,7 @@ public class DnsDiscoveryConfigExtended {
     }
 
     void resolutionTimeout() {
-        final String envResolutionTimeout = configEnvironment.getEnvResolutionTimeout();
+        final var envResolutionTimeout = configEnvironment.getEnvResolutionTimeout();
         if (envResolutionTimeout != null && !envResolutionTimeout.isEmpty()) {
             try {
                 resolutionTimeout = Integer.parseInt(envResolutionTimeout);
@@ -137,7 +136,6 @@ public class DnsDiscoveryConfigExtended {
         }
         try {
             final int propResolutionTimeout = configFile.getFileResolutionTimeout();
-
             if (propResolutionTimeout != -1) {
                 resolutionTimeout = propResolutionTimeout;
             } else {
@@ -153,7 +151,7 @@ public class DnsDiscoveryConfigExtended {
     }
 
     void reloadInterval() {
-        final String envReloadInterval = configEnvironment.getEnvReloadInterval();
+        final var envReloadInterval = configEnvironment.getEnvReloadInterval();
         if (envReloadInterval != null && !envReloadInterval.isBlank()) {
             try {
                 reloadInterval = Integer.parseInt(envReloadInterval);
@@ -166,7 +164,7 @@ public class DnsDiscoveryConfigExtended {
             }
         }
         try {
-            final int propReloadInterval = configFile.getFileReloadInterval();
+            final var propReloadInterval = configFile.getFileReloadInterval();
             if (propReloadInterval != -1) {
                 reloadInterval = propReloadInterval;
             } else {

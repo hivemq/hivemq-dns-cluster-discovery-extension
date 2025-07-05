@@ -16,9 +16,6 @@
 package com.hivemq.extensions.cluster.discovery.dns;
 
 import io.github.sgtsilvio.gradle.oci.junit.jupiter.OciImages;
-import okhttp3.OkHttpClient;
-import okhttp3.Request;
-import okhttp3.Response;
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -30,14 +27,17 @@ import org.testcontainers.hivemq.HiveMQContainer;
 import org.testcontainers.images.builder.Transferable;
 import org.testcontainers.utility.MountableFile;
 
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 import java.util.Arrays;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 
 /**
  * @author Lukas Brand
@@ -63,11 +63,10 @@ class DnsDiscoveryExtensionIT {
         testDnsServer = new TestDnsServer(Set.of(DNS_DISCOVERY_ADDRESS), 4);
         testDnsServer.start();
 
-        final String config =
-                "dnsServerAddress=host.docker.internal:" + testDnsServer.localAddress().getPort() + '\n' + //
-                        "discoveryAddress=" + DNS_DISCOVERY_ADDRESS + '\n' + //
-                        "resolutionTimeout=30\n" + //
-                        "reloadInterval=60";
+        final var config = "dnsServerAddress=host.docker.internal:" + testDnsServer.localAddress().getPort() + '\n' + //
+                "discoveryAddress=" + DNS_DISCOVERY_ADDRESS + '\n' + //
+                "resolutionTimeout=30\n" + //
+                "reloadInterval=60";
 
         node1 = new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-dns-cluster-discovery")
                 .asCompatibleSubstituteFor("hivemq/hivemq4")) //
@@ -89,10 +88,10 @@ class DnsDiscoveryExtensionIT {
     void test_metric_success() throws Exception {
         node1.start();
 
-        final Map<String, Float> metrics = getMetrics();
-        assertEquals(1, metrics.get(SUCCESS_METRIC));
-        assertEquals(0, metrics.get(FAILURE_METRIC));
-        assertEquals(4, metrics.get(IP_COUNT_METRIC));
+        final var metrics = getMetrics();
+        assertThat(metrics.get(SUCCESS_METRIC)).isEqualTo(1);
+        assertThat(metrics.get(FAILURE_METRIC)).isEqualTo(0);
+        assertThat(metrics.get(IP_COUNT_METRIC)).isEqualTo(4);
     }
 
     @Test
@@ -101,30 +100,25 @@ class DnsDiscoveryExtensionIT {
         testDnsServer.stop();
         node1.start();
 
-        final Map<String, Float> metrics = getMetrics();
-        assertEquals(0, metrics.get(SUCCESS_METRIC));
-        assertEquals(1, metrics.get(FAILURE_METRIC));
-        assertEquals(0, metrics.get(IP_COUNT_METRIC));
+        final var metrics = getMetrics();
+        assertThat(metrics.get(SUCCESS_METRIC)).isEqualTo(0);
+        assertThat(metrics.get(FAILURE_METRIC)).isEqualTo(1);
+        assertThat(metrics.get(IP_COUNT_METRIC)).isEqualTo(0);
     }
 
     private @NotNull Map<String, Float> getMetrics() throws Exception {
-        final OkHttpClient client = new OkHttpClient();
+        final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
         //noinspection HttpUrlsUsage
-        final Request request =
-                new Request.Builder().url("http://" + node1.getHost() + ":" + node1.getMappedPort(9399) + "/metrics")
-                        .build();
-
-        final String string;
-        try (final Response response = client.newCall(request).execute()) {
-            string = Objects.requireNonNull(response.body()).string();
-        }
-
-        return parseMetrics(string, Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
+        final var request = HttpRequest.newBuilder()
+                .uri(URI.create("http://" + node1.getHost() + ":" + node1.getMappedPort(9399) + "/metrics"))
+                .build();
+        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+        return parseMetrics(response.body(), Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
     }
 
     private @NotNull Map<String, Float> parseMetrics(
-            final @NotNull String metricsDump, final @NotNull Set<String> metrics) {
-
+            final @NotNull String metricsDump,
+            final @NotNull Set<String> metrics) {
         return metricsDump.lines()
                 .filter(s -> !s.startsWith("#"))
                 .map(s -> s.split(" "))

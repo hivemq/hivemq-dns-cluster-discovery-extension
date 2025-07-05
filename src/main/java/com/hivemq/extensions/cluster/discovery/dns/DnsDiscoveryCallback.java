@@ -24,22 +24,17 @@ import io.netty.channel.EventLoopGroup;
 import io.netty.channel.MultiThreadIoEventLoopGroup;
 import io.netty.channel.nio.NioIoHandler;
 import io.netty.channel.socket.nio.NioDatagramChannel;
-import io.netty.resolver.dns.DnsNameResolver;
 import io.netty.resolver.dns.DnsNameResolverBuilder;
 import io.netty.resolver.dns.SingletonDnsServerAddressStreamProvider;
-import io.netty.util.concurrent.Future;
 import org.apache.commons.validator.routines.InetAddressValidator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -48,6 +43,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 import static com.hivemq.extensions.cluster.discovery.dns.ExtensionConstants.EXTENSION_NAME;
+
 /**
  * Cluster discovery using DNS resolution of round-robin A records.
  * Uses non-blocking netty API for DNS resolution, reads discovery parameters as environment variables.
@@ -70,12 +66,12 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
     private @Nullable ClusterNodeAddress ownAddress;
 
     DnsDiscoveryCallback(
-            final @NotNull DnsDiscoveryConfigExtended configuration, final @NotNull DnsDiscoveryMetrics metrics) {
+            final @NotNull DnsDiscoveryConfigExtended configuration,
+            final @NotNull DnsDiscoveryMetrics metrics) {
         this.eventLoopGroup = new MultiThreadIoEventLoopGroup(1, NioIoHandler.newFactory());
         this.addressValidator = InetAddressValidator.getInstance();
         this.configuration = configuration;
         this.metrics = metrics;
-
         metrics.registerAddressCountGauge(addressesCount::get);
     }
 
@@ -103,7 +99,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
 
     private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
         try {
-            final List<ClusterNodeAddress> clusterNodeAddresses = loadOtherNodes();
+            final var clusterNodeAddresses = loadOtherNodes();
             if (clusterNodeAddresses != null) {
                 clusterDiscoveryOutput.provideCurrentNodes(clusterNodeAddresses);
                 metrics.getQuerySuccessCount().inc();
@@ -120,37 +116,36 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
             return null;
         }
 
-        final String discoveryAddress = configuration.getDiscoveryAddress().orElse("");
+        final var discoveryAddress = configuration.getDiscoveryAddress().orElse("");
         if (discoveryAddress.isEmpty()) {
             log.warn("{}: Discovery address not set, skipping DNS query.", EXTENSION_NAME);
             return null;
         }
-        final int discoveryTimeout = configuration.getResolutionTimeout();
+        final var discoveryTimeout = configuration.getResolutionTimeout();
 
         // initialize netty DNS resolver
-        final DnsNameResolverBuilder dnsNameResolverBuilder =
+        final var dnsNameResolverBuilder =
                 new DnsNameResolverBuilder(eventLoopGroup.next()).datagramChannelType(NioDatagramChannel.class)
                         .optResourceEnabled(false);
 
         // use custom DNS server address if necessary
-        final Optional<InetSocketAddress> dnsServerAddress = configuration.getDnsServerAddress();
+        final var dnsServerAddress = configuration.getDnsServerAddress();
         dnsServerAddress.ifPresent(inetSocketAddress -> dnsNameResolverBuilder.nameServerProvider(new SingletonDnsServerAddressStreamProvider(
                 inetSocketAddress)));
 
-        try (final DnsNameResolver resolver = dnsNameResolverBuilder.build()) {
-            final Future<List<InetAddress>> addresses = resolver.resolveAll(discoveryAddress);
-            final List<ClusterNodeAddress> clusterNodeAddresses =
-                    addresses.get(discoveryTimeout, TimeUnit.SECONDS)
-                            .stream()
-                            // skip any possibly unresolved elements
-                            .filter(Objects::nonNull)
-                            // check if the discoveryAddress address we got from the DNS is a valid IP address
-                            .filter((address) -> addressValidator.isValid(address.getHostAddress()))
-                            .map((address) -> new ClusterNodeAddress(address.getHostAddress(), ownAddress.getPort()))
-                            .collect(Collectors.toList());
+        try (final var resolver = dnsNameResolverBuilder.build()) {
+            final var addresses = resolver.resolveAll(discoveryAddress);
+            final var clusterNodeAddresses = addresses.get(discoveryTimeout, TimeUnit.SECONDS)
+                    .stream()
+                    // skip any possibly unresolved elements
+                    .filter(Objects::nonNull)
+                    // check if the discoveryAddress address we got from the DNS is a valid IP address
+                    .filter((address) -> addressValidator.isValid(address.getHostAddress()))
+                    .map((address) -> new ClusterNodeAddress(address.getHostAddress(), ownAddress.getPort()))
+                    .collect(Collectors.toList());
 
-            final List<String> foundHosts = new ArrayList<>();
-            final List<String> lastFoundHosts = foundHostsRef.get();
+            final var foundHosts = new ArrayList<String>();
+            final var lastFoundHosts = foundHostsRef.get();
             clusterNodeAddresses.forEach((address) -> {
                 final String host = address.getHost();
                 foundHosts.add(host);
@@ -168,7 +163,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
 
             return clusterNodeAddresses;
         } catch (final ExecutionException e) {
-            final Throwable rootCause = e.getCause() != null ? e.getCause() : e;
+            final var rootCause = e.getCause() != null ? e.getCause() : e;
             log.error("{}: Failed to resolve DNS record for address '{}' (reason: {}).",
                     EXTENSION_NAME,
                     discoveryAddress,

@@ -17,37 +17,31 @@ package com.hivemq.extensions.cluster.discovery.dns.configuration;
 
 import org.jetbrains.annotations.NotNull;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 /**
  * @author Lukas Brand
  */
-@ExtendWith(MockitoExtension.class)
 class DnsDiscoveryConfigExtendedTest {
 
-    @Mock
-    @NotNull DnsDiscoveryConfigFile configFile;
-
-    @Mock
-    @NotNull DnsDiscoveryConfigEnvironment configEnvironment;
+    private final @NotNull DnsDiscoveryConfigFile configFile = mock();
+    private final @NotNull DnsDiscoveryConfigEnvironment configEnvironment = mock();
 
     @Test
     void test_dnsServerAddress_env() {
         when(configEnvironment.getEnvDnsServerAddress()).thenReturn("Test.Env:8888");
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.dnsServerAddress();
 
-        assertTrue(configExtended.getDnsServerAddress().isPresent());
-        assertEquals("Test.Env", configExtended.getDnsServerAddress().get().getHostName());
-        assertEquals(8888, configExtended.getDnsServerAddress().get().getPort());
+        assertThat(configExtended.getDnsServerAddress()).hasValueSatisfying(inetSocketAddress -> {
+            assertThat(inetSocketAddress.getHostName()).isEqualTo("Test.Env");
+            assertThat(inetSocketAddress.getPort()).isEqualTo(8888);
+        });
     }
 
     @Test
@@ -55,12 +49,12 @@ class DnsDiscoveryConfigExtendedTest {
         when(configEnvironment.getEnvDnsServerAddress()).thenReturn(null);
         when(configFile.getFileDnsServerAddress()).thenReturn("Test.File:8888");
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.dnsServerAddress();
-
-        assertTrue(configExtended.getDnsServerAddress().isPresent());
-        assertEquals("Test.File", configExtended.getDnsServerAddress().get().getHostName());
-        assertEquals(8888, configExtended.getDnsServerAddress().get().getPort());
+        assertThat(configExtended.getDnsServerAddress()).hasValueSatisfying(inetSocketAddress -> {
+            assertThat(inetSocketAddress.getHostName()).isEqualTo("Test.File");
+            assertThat(inetSocketAddress.getPort()).isEqualTo(8888);
+        });
     }
 
     @Test
@@ -68,19 +62,17 @@ class DnsDiscoveryConfigExtendedTest {
         when(configEnvironment.getEnvDnsServerAddress()).thenReturn(null);
         when(configFile.getFileDnsServerAddress()).thenReturn(null);
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.dnsServerAddress();
-
-        assertTrue(configExtended.getDnsServerAddress().isEmpty());
+        assertThat(configExtended.getDnsServerAddress()).isEmpty();
     }
 
     @Test
     void test_dnsServerAddress_env_bad_port() {
         when(configEnvironment.getEnvDnsServerAddress()).thenReturn("Test:-30");
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
-
-        assertThrows(ConfigurationException.class, configExtended::dnsServerAddress);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        assertThatThrownBy(configExtended::dnsServerAddress).isInstanceOf(ConfigurationException.class);
     }
 
     @Test
@@ -88,21 +80,17 @@ class DnsDiscoveryConfigExtendedTest {
         when(configEnvironment.getEnvDnsServerAddress()).thenReturn(null);
         when(configFile.getFileDnsServerAddress()).thenReturn("Test:-30");
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
-
-        assertThrows(ConfigurationException.class, configExtended::dnsServerAddress);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        assertThatThrownBy(configExtended::dnsServerAddress).isInstanceOf(ConfigurationException.class);
     }
-
 
     @Test
     void test_discoveryAddress_env() {
         when(configEnvironment.getEnvDiscoveryAddress()).thenReturn("Test.Env");
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.discoveryAddress();
-
-        assertTrue(configExtended.getDiscoveryAddress().isPresent());
-        assertEquals("Test.Env", configExtended.getDiscoveryAddress().get());
+        assertThat(configExtended.getDiscoveryAddress()).hasValue("Test.Env");
     }
 
     @Test
@@ -110,11 +98,9 @@ class DnsDiscoveryConfigExtendedTest {
         when(configEnvironment.getEnvDiscoveryAddress()).thenReturn(null);
         when(configFile.getFileDiscoveryAddress()).thenReturn("Test.File");
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.discoveryAddress();
-
-        assertTrue(configExtended.getDiscoveryAddress().isPresent());
-        assertEquals("Test.File", configExtended.getDiscoveryAddress().get());
+        assertThat(configExtended.getDiscoveryAddress()).hasValue("Test.File");
     }
 
     @Test
@@ -122,10 +108,9 @@ class DnsDiscoveryConfigExtendedTest {
         when(configEnvironment.getEnvDiscoveryAddress()).thenReturn(null);
         when(configFile.getFileDiscoveryAddress()).thenReturn(null);
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.discoveryAddress();
-
-        assertTrue(configExtended.getDnsServerAddress().isEmpty());
+        assertThat(configExtended.getDnsServerAddress()).isEmpty();
     }
 
 
@@ -133,10 +118,9 @@ class DnsDiscoveryConfigExtendedTest {
     void test_resolutionTimeout_env() {
         when(configEnvironment.getEnvResolutionTimeout()).thenReturn("1234");
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.resolutionTimeout();
-
-        assertEquals(1234, configExtended.getResolutionTimeout());
+        assertThat(configExtended.getResolutionTimeout()).isEqualTo(1234);
     }
 
     @Test
@@ -144,10 +128,9 @@ class DnsDiscoveryConfigExtendedTest {
         when(configEnvironment.getEnvResolutionTimeout()).thenReturn(null);
         when(configFile.getFileResolutionTimeout()).thenReturn(4321);
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.resolutionTimeout();
-
-        assertEquals(4321, configExtended.getResolutionTimeout());
+        assertThat(configExtended.getResolutionTimeout()).isEqualTo(4321);
     }
 
     @Test
@@ -155,10 +138,9 @@ class DnsDiscoveryConfigExtendedTest {
         when(configEnvironment.getEnvResolutionTimeout()).thenReturn(null);
         when(configFile.getFileResolutionTimeout()).thenReturn(-1);
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.resolutionTimeout();
-
-        assertEquals(30, configExtended.getResolutionTimeout());
+        assertThat(configExtended.getResolutionTimeout()).isEqualTo(30);
     }
 
 
@@ -166,10 +148,9 @@ class DnsDiscoveryConfigExtendedTest {
     void test_reloadInterval_env() {
         when(configEnvironment.getEnvReloadInterval()).thenReturn("1234");
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.reloadInterval();
-
-        assertEquals(1234, configExtended.getReloadInterval());
+        assertThat(configExtended.getReloadInterval()).isEqualTo(1234);
     }
 
     @Test
@@ -177,10 +158,9 @@ class DnsDiscoveryConfigExtendedTest {
         when(configEnvironment.getEnvReloadInterval()).thenReturn(null);
         when(configFile.getFileReloadInterval()).thenReturn(4321);
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.reloadInterval();
-
-        assertEquals(4321, configExtended.getReloadInterval());
+        assertThat(configExtended.getReloadInterval()).isEqualTo(4321);
     }
 
     @Test
@@ -188,9 +168,8 @@ class DnsDiscoveryConfigExtendedTest {
         when(configEnvironment.getEnvReloadInterval()).thenReturn(null);
         when(configFile.getFileReloadInterval()).thenReturn(-1);
 
-        final DnsDiscoveryConfigExtended configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
+        final var configExtended = new DnsDiscoveryConfigExtended(configFile, configEnvironment);
         configExtended.reloadInterval();
-
-        assertEquals(30, configExtended.getReloadInterval());
+        assertThat(configExtended.getReloadInterval()).isEqualTo(30);
     }
 }

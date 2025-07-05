@@ -28,7 +28,7 @@ import org.mockito.ArgumentCaptor;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -36,22 +36,21 @@ import static org.mockito.Mockito.when;
 
 class DnsDiscoveryCallbackTest {
 
+    private final @NotNull ClusterDiscoveryInput input = mock();
+    private final @NotNull ClusterDiscoveryOutput output = mock();
+
     private final @NotNull ClusterNodeAddress cla = new ClusterNodeAddress("localhost", 1883);
 
     private @NotNull DnsDiscoveryCallback dnsDiscoveryCallback;
-    private @NotNull ClusterDiscoveryInput input;
-    private @NotNull ClusterDiscoveryOutput output;
 
     @BeforeEach
     void setUp() {
-        input = mock(ClusterDiscoveryInput.class);
         when(input.getOwnAddress()).thenReturn(cla);
-        output = mock(ClusterDiscoveryOutput.class);
 
-        final DnsDiscoveryMetrics metrics = mock(DnsDiscoveryMetrics.class);
+        final var metrics = mock(DnsDiscoveryMetrics.class);
         when(metrics.getQuerySuccessCount()).thenReturn(new Counter());
 
-        final DnsDiscoveryConfigExtended configuration = mock(DnsDiscoveryConfigExtended.class);
+        final var configuration = mock(DnsDiscoveryConfigExtended.class);
         when(configuration.getDnsServerAddress()).thenReturn(Optional.empty());
         when(configuration.getDiscoveryAddress()).thenReturn(Optional.of("172.16.16.1"));
         when(configuration.getResolutionTimeout()).thenReturn(30);
@@ -67,11 +66,11 @@ class DnsDiscoveryCallbackTest {
         //noinspection unchecked
         final ArgumentCaptor<List<ClusterNodeAddress>> captor = ArgumentCaptor.forClass(List.class);
         verify(output).provideCurrentNodes(captor.capture());
-        assertEquals(List.of(new ClusterNodeAddress("172.16.16.1", 1883)), captor.getValue());
+        assertThat(captor.getValue()).containsExactly(new ClusterNodeAddress("172.16.16.1", 1883));
 
         dnsDiscoveryCallback.reload(input, output);
 
         verify(output, times(2)).provideCurrentNodes(captor.capture());
-        assertEquals(List.of(new ClusterNodeAddress("172.16.16.1", 1883)), captor.getValue());
+        assertThat(captor.getValue()).containsExactly(new ClusterNodeAddress("172.16.16.1", 1883));
     }
 }

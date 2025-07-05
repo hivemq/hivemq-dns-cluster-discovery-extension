@@ -1,5 +1,6 @@
 [versions]
 apacheDS = "2.0.0.AM27"
+assertj = "3.27.3"
 commonsValidator = "1.9.0"
 gradleOci-junitJupiter = "0.7.0"
 hivemq-extensionSdk = "4.1.0"
@@ -8,12 +9,12 @@ junit-jupiter = "5.10.0"
 logback = "1.5.18"
 mockito = "5.18.0"
 netty = "4.2.1.Final"
-okhttp = "4.12.0"
 owner = "1.0.12"
 testcontainers = "1.21.3"
 
 [libraries]
 apacheDS-dns = { module = "org.apache.directory.server:apacheds-protocol-dns", version.ref = "apacheDS" }
+assertj = { module = "org.assertj:assertj-core", version.ref = "assertj" }
 commonsValidator = { module = "commons-validator:commons-validator", version.ref = "commonsValidator" }
 gradleOci-junitJupiter = { module = "io.github.sgtsilvio:gradle-oci-junit-jupiter", version.ref = "gradleOci-junitJupiter" }
 jetbrains-annotations = { module = "org.jetbrains:annotations", version.ref = "jetbrains-annotations" }
@@ -21,7 +22,6 @@ logback-classic = { module = "ch.qos.logback:logback-classic", version.ref = "lo
 mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
 mockito-junitJupiter = { module = "org.mockito:mockito-junit-jupiter", version.ref = "mockito" }
 netty-resolver-dns = { module = "io.netty:netty-resolver-dns", version.ref = "netty" }
-okhttp = { module = "com.squareup.okhttp3:okhttp", version.ref = "okhttp" }
 owner = { module = "org.aeonbits.owner:owner", version.ref = "owner" }
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
 testcontainers-hivemq = { module = "org.testcontainers:hivemq", version.ref = "testcontainers" }

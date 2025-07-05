@@ -21,7 +21,6 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Properties;
 
 /**
@@ -47,9 +46,9 @@ public class ConfigurationFileReader {
      * @return DnsDiscoveryConfigFile The configuration from the config file or default values.
      */
     public @NotNull DnsDiscoveryConfigFile get() {
-        final File propertiesFile = new File(extensionHomeFolder, CONFIG_PATH);
-        try (final InputStream inputStream = new FileInputStream(propertiesFile)) {
-            final Properties properties = new Properties();
+        final var propertiesFile = new File(extensionHomeFolder, CONFIG_PATH);
+        try (final var inputStream = new FileInputStream(propertiesFile)) {
+            final var properties = new Properties();
             properties.load(inputStream);
             return ConfigFactory.create(DnsDiscoveryConfigFile.class, properties);
         } catch (final IOException e) {

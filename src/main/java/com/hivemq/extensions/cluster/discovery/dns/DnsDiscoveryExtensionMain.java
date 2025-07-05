@@ -45,11 +45,11 @@ public class DnsDiscoveryExtensionMain implements ExtensionMain {
             final @NotNull ExtensionStartInput extensionStartInput,
             final @NotNull ExtensionStartOutput extensionStartOutput) {
         try {
-            final File extensionHomeFolder = extensionStartInput.getExtensionInformation().getExtensionHomeFolder();
-            final ConfigurationFileReader configurationFileReader = new ConfigurationFileReader(extensionHomeFolder);
-            final DnsDiscoveryConfigFile dnsFileConfig = configurationFileReader.get();
-            final DnsDiscoveryConfigExtended extendedConfig = DnsDiscoveryConfigExtended.createInstance(dnsFileConfig);
-            final DnsDiscoveryMetrics metrics = new DnsDiscoveryMetrics(Services.metricRegistry());
+            final var extensionHomeFolder = extensionStartInput.getExtensionInformation().getExtensionHomeFolder();
+            final var configurationFileReader = new ConfigurationFileReader(extensionHomeFolder);
+            final var dnsFileConfig = configurationFileReader.get();
+            final var extendedConfig = DnsDiscoveryConfigExtended.createInstance(dnsFileConfig);
+            final var metrics = new DnsDiscoveryMetrics(Services.metricRegistry());
 
             dnsDiscoveryCallback = new DnsDiscoveryCallback(extendedConfig, metrics);
 

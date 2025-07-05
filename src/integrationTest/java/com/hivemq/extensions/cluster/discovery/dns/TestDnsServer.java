@@ -38,7 +38,6 @@ import org.apache.mina.filter.codec.ProtocolDecoderAdapter;
 import org.apache.mina.filter.codec.ProtocolDecoderOutput;
 import org.apache.mina.filter.codec.ProtocolEncoder;
 import org.apache.mina.filter.codec.ProtocolEncoderOutput;
-import org.apache.mina.transport.socket.DatagramAcceptor;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -50,7 +49,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * This Class was inspired by the Netty Project.
+ * This class was inspired by the Netty Project.
  *
  * @author Lukas Brand
  * @see <a
@@ -61,20 +60,16 @@ class TestDnsServer extends DnsServer {
     private final @NotNull RecordStore store;
 
     TestDnsServer(final @NotNull Set<String> domains, final int numOfRecords) {
-        this(new FixedRecordStore(domains, numOfRecords));
-    }
-
-    TestDnsServer(final @NotNull RecordStore store) {
-        this.store = store;
+        this.store = new FixedRecordStore(domains, numOfRecords);
     }
 
     @Override
     public void start() throws IOException {
-        final InetSocketAddress address = new InetSocketAddress("0.0.0.0", 0);
-        final UdpTransport transport = new UdpTransport(address.getHostName(), address.getPort());
+        final var address = new InetSocketAddress("0.0.0.0", 0);
+        final var transport = new UdpTransport(address.getHostName(), address.getPort());
         setTransports(transport);
 
-        final DatagramAcceptor acceptor = transport.getAcceptor();
+        final var acceptor = transport.getAcceptor();
         acceptor.setHandler(new DnsProtocolHandler(this, store) {
             @Override
             public void sessionCreated(final @NotNull IoSession session) {
@@ -95,7 +90,7 @@ class TestDnsServer extends DnsServer {
     private static final class TestDnsProtocolUdpCodecFactory implements ProtocolCodecFactory {
 
         @Override
-        public ProtocolEncoder getEncoder(final @NotNull IoSession session) {
+        public @NotNull ProtocolEncoder getEncoder(final @NotNull IoSession session) {
             return new DnsUdpEncoder() {
                 private final @NotNull DnsMessageEncoder encoder = new DnsMessageEncoder();
 
@@ -104,17 +99,17 @@ class TestDnsServer extends DnsServer {
                         final @NotNull IoSession session,
                         final @NotNull Object message,
                         final @NotNull ProtocolEncoderOutput out) {
-                    final IoBuffer buf = IoBuffer.allocate(1024);
-                    final DnsMessage dnsMessage = (DnsMessage) message;
-                    encoder.encode(buf, dnsMessage);
-                    buf.flip();
-                    out.write(buf);
+                    final var buffer = IoBuffer.allocate(1024);
+                    final var dnsMessage = (DnsMessage) message;
+                    encoder.encode(buffer, dnsMessage);
+                    buffer.flip();
+                    out.write(buffer);
                 }
             };
         }
 
         @Override
-        public ProtocolDecoder getDecoder(final @NotNull IoSession session) {
+        public @NotNull ProtocolDecoder getDecoder(final @NotNull IoSession session) {
             return new ProtocolDecoderAdapter() {
                 private final @NotNull DnsMessageDecoder decoder = new DnsMessageDecoder();
 
@@ -123,7 +118,7 @@ class TestDnsServer extends DnsServer {
                         final @NotNull IoSession session,
                         final @NotNull IoBuffer in,
                         final @NotNull ProtocolDecoderOutput out) throws IOException {
-                    final DnsMessage message = decoder.decode(in);
+                    final var message = decoder.decode(in);
                     out.write(message);
                 }
             };
@@ -142,9 +137,9 @@ class TestDnsServer extends DnsServer {
 
         @Override
         public @Nullable Set<ResourceRecord> getRecords(final @NotNull QuestionRecord questionRecord) {
-            final String name = questionRecord.getDomainName();
+            final var name = questionRecord.getDomainName();
             if (domains.contains(name) && (questionRecord.getRecordType() == RecordType.A)) {
-                final Set<ResourceRecord> records = new HashSet<>();
+                final var records = new HashSet<ResourceRecord>();
                 for (int i = 0; i < numOfRecords; i++) {
                     records.add(newARecord(name, i + ".2.3.4"));
                 }
