@@ -1,6 +1,6 @@
 [versions]
 apacheDS = "2.0.0.AM27"
-assertj = "3.27.4"
+assertj = "3.27.5"
 commonsValidator = "1.10.0"
 gradleOci-junitJupiter = "0.7.0"
 hivemq-extensionSdk = "4.1.0"
