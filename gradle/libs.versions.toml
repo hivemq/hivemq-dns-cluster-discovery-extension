@@ -24,7 +24,7 @@ mockito-junitJupiter = { module = "org.mockito:mockito-junit-jupiter", version.r
 netty-resolver-dns = { module = "io.netty:netty-resolver-dns", version.ref = "netty" }
 owner = { module = "org.aeonbits.owner:owner", version.ref = "owner" }
 testcontainers = { module = "org.testcontainers:testcontainers", version.ref = "testcontainers" }
-testcontainers-hivemq = { module = "org.testcontainers:hivemq", version.ref = "testcontainers" }
+testcontainers-hivemq = { module = "org.testcontainers:testcontainers-hivemq", version.ref = "testcontainers" }
 
 [plugins]
 defaults = { id = "io.github.sgtsilvio.gradle.defaults", version = "0.2.0" }
