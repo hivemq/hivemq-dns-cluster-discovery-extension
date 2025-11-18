@@ -56,7 +56,7 @@ class DnsDiscoveryExtensionIT {
             "com_hivemq_dns_cluster_discovery_extension_resolved_addresses";
 
     private @NotNull TestDnsServer testDnsServer;
-    private @NotNull HiveMQContainer node1;
+    private @NotNull HiveMQContainer node;
 
     @BeforeEach
     void setUp() throws Exception {
@@ -68,25 +68,26 @@ class DnsDiscoveryExtensionIT {
                 "resolutionTimeout=30\n" + //
                 "reloadInterval=60";
 
-        node1 = new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-dns-cluster-discovery")
+        node = new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-dns-cluster-discovery")
                 .asCompatibleSubstituteFor("hivemq/hivemq4")) //
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
                 .withCopyToContainer(Transferable.of(config),
                         "/opt/hivemq/extensions/hivemq-dns-cluster-discovery/dnsdiscovery.properties")
                 .withExposedPorts(9399)
-                .withExtraHost("host.docker.internal", "host-gateway");
+                .withExtraHost("host.docker.internal", "host-gateway")
+                .withEnv("HIVEMQ_DISABLE_STATISTICS", "true");
     }
 
     @AfterEach
     void tearDown() {
-        node1.stop();
+        node.stop();
         testDnsServer.stop();
     }
 
     @Test
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
     void test_metric_success() throws Exception {
-        node1.start();
+        node.start();
 
         final var metrics = getMetrics();
         assertThat(metrics.get(SUCCESS_METRIC)).isEqualTo(1);
@@ -98,7 +99,7 @@ class DnsDiscoveryExtensionIT {
     @Timeout(value = 2, unit = TimeUnit.MINUTES)
     void test_metric_failure() throws Exception {
         testDnsServer.stop();
-        node1.start();
+        node.start();
 
         final var metrics = getMetrics();
         assertThat(metrics.get(SUCCESS_METRIC)).isEqualTo(0);
@@ -110,7 +111,7 @@ class DnsDiscoveryExtensionIT {
         final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
         //noinspection HttpUrlsUsage
         final var request = HttpRequest.newBuilder()
-                .uri(URI.create("http://" + node1.getHost() + ":" + node1.getMappedPort(9399) + "/metrics"))
+                .uri(URI.create("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics"))
                 .build();
         final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return parseMetrics(response.body(), Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
