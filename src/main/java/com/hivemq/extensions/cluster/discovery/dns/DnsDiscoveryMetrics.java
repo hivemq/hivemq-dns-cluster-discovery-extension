@@ -25,8 +25,8 @@ import org.jetbrains.annotations.NotNull;
  */
 class DnsDiscoveryMetrics {
 
-    static final @NotNull String DNS_DISCOVERY_EXTENSION = "dns-cluster-discovery-extension";
     static final @NotNull String HIVEMQ_PREFIX = "com.hivemq";
+    static final @NotNull String DNS_DISCOVERY_EXTENSION = "dns-cluster-discovery-extension";
 
     private final @NotNull MetricRegistry metricRegistry;
     private final @NotNull Counter querySuccessCount;
@@ -34,10 +34,10 @@ class DnsDiscoveryMetrics {
 
     DnsDiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
-        querySuccessCount = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
+        this.querySuccessCount = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
                 DNS_DISCOVERY_EXTENSION,
                 "query.success.count"));
-        queryFailedCount = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
+        this.queryFailedCount = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
                 DNS_DISCOVERY_EXTENSION,
                 "query.failed.count"));
     }
@@ -53,5 +53,10 @@ class DnsDiscoveryMetrics {
     void registerAddressCountGauge(final @NotNull Gauge<Integer> supplier) {
         metricRegistry.gauge(MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "resolved-addresses"),
                 () -> supplier);
+    }
+
+    void stop() {
+        final var metricPrefix = MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION);
+        metricRegistry.removeMatching((name, metric) -> name.startsWith(metricPrefix) && metric instanceof Gauge);
     }
 }

@@ -17,6 +17,7 @@ package com.hivemq.extensions.cluster.discovery.dns;
 
 import com.codahale.metrics.MetricRegistry;
 import org.jetbrains.annotations.NotNull;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -27,7 +28,6 @@ import java.util.concurrent.atomic.AtomicInteger;
 import static com.hivemq.extensions.cluster.discovery.dns.DnsDiscoveryMetrics.DNS_DISCOVERY_EXTENSION;
 import static com.hivemq.extensions.cluster.discovery.dns.DnsDiscoveryMetrics.HIVEMQ_PREFIX;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class DnsDiscoveryMetricsTest {
 
@@ -40,11 +40,16 @@ class DnsDiscoveryMetricsTest {
         metrics = new DnsDiscoveryMetrics(metricRegistry);
     }
 
+    @AfterEach
+    void tearDown() {
+        metrics.stop();
+    }
+
     @Test
     void test_resolutionRequestCounter() {
         final var counter = metrics.getQuerySuccessCount();
         counter.inc();
-        final var name = HIVEMQ_PREFIX + "." + DNS_DISCOVERY_EXTENSION + "." + "query.success.count";
+        final var name = MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "query.success.count");
         final var counterFromRegistry = metricRegistry.counter(name);
         assertThat(counterFromRegistry.getCount()).isEqualTo(counter.getCount());
     }
@@ -53,7 +58,7 @@ class DnsDiscoveryMetricsTest {
     void test_resolutionRequestCounterFailed() {
         final var counter = metrics.getQueryFailedCount();
         counter.inc();
-        final var name = HIVEMQ_PREFIX + "." + DNS_DISCOVERY_EXTENSION + "." + "query.failed.count";
+        final var name = MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "query.failed.count");
         final var counterFromRegistry = metricRegistry.counter(name);
         assertThat(counterFromRegistry.getCount()).isEqualTo(counter.getCount());
     }
@@ -66,7 +71,7 @@ class DnsDiscoveryMetricsTest {
 
         metrics.registerAddressCountGauge(addressesCount::get);
 
-        final var name = HIVEMQ_PREFIX + "." + DNS_DISCOVERY_EXTENSION + "." + "resolved-addresses";
+        final var name = MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "resolved-addresses");
         final var gauge = metricRegistry.getGauges().get(name);
         assertThat(gauge.getValue()).isEqualTo(addresses.size());
 
@@ -74,5 +79,17 @@ class DnsDiscoveryMetricsTest {
         addresses.add(3);
         addressesCount.set(addresses.size());
         assertThat(gauge.getValue()).isEqualTo(addresses.size());
+    }
+
+    @Test
+    void test_stop() {
+        final var addressesCount = new AtomicInteger(0);
+        metrics.registerAddressCountGauge(addressesCount::get);
+        final var counters = metricRegistry.getCounters();
+        assertThat(metricRegistry.getGauges()).isNotEmpty();
+
+        metrics.stop();
+        assertThat(metricRegistry.getCounters()).isEqualTo(counters);
+        assertThat(metricRegistry.getGauges()).isEmpty();
     }
 }

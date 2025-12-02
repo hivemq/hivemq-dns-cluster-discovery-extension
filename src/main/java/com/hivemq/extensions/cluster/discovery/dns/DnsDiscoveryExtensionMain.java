@@ -24,11 +24,8 @@ import com.hivemq.extension.sdk.api.services.Services;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationException;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.ConfigurationFileReader;
 import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigExtended;
-import com.hivemq.extensions.cluster.discovery.dns.configuration.DnsDiscoveryConfigFile;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-
-import java.io.File;
 
 /**
  * This is the main class of the DNS discovery extension, which is instantiated during the HiveMQ start up process.

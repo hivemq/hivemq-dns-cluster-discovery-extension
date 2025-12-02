@@ -95,6 +95,7 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
     @Override
     public void destroy(final @NotNull ClusterDiscoveryInput clusterDiscoveryInput) {
         eventLoopGroup.shutdownGracefully();
+        metrics.stop();
     }
 
     private void loadClusterNodeAddresses(final @NotNull ClusterDiscoveryOutput clusterDiscoveryOutput) {
