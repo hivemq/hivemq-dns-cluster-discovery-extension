@@ -63,13 +63,15 @@ class DnsDiscoveryExtensionIT {
         testDnsServer = new TestDnsServer(Set.of(DNS_DISCOVERY_ADDRESS), 4);
         testDnsServer.start();
 
-        final var config = "dnsServerAddress=host.docker.internal:" + testDnsServer.localAddress().getPort() + '\n' + //
-                "discoveryAddress=" + DNS_DISCOVERY_ADDRESS + '\n' + //
-                "resolutionTimeout=30\n" + //
-                "reloadInterval=60";
+        final var config = """
+                dnsServerAddress=host.docker.internal:%d
+                discoveryAddress=%s
+                resolutionTimeout=30
+                reloadInterval=60
+                """.formatted(testDnsServer.localAddress().getPort(), DNS_DISCOVERY_ADDRESS);
 
         node = new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-dns-cluster-discovery")
-                .asCompatibleSubstituteFor("hivemq/hivemq4")) //
+                .asCompatibleSubstituteFor("hivemq/hivemq4"))
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
                 .withCopyToContainer(Transferable.of(config),
                         "/opt/hivemq/extensions/hivemq-dns-cluster-discovery/dnsdiscovery.properties")
@@ -108,13 +110,14 @@ class DnsDiscoveryExtensionIT {
     }
 
     private @NotNull Map<String, Float> getMetrics() throws Exception {
-        final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build();
-        //noinspection HttpUrlsUsage
-        final var request = HttpRequest.newBuilder()
-                .uri(URI.create("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics"))
-                .build();
-        final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        return parseMetrics(response.body(), Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
+        try (final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()) {
+            //noinspection HttpUrlsUsage
+            final var request = HttpRequest.newBuilder()
+                    .uri(URI.create("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics"))
+                    .build();
+            final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            return parseMetrics(response.body(), Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
+        }
     }
 
     private @NotNull Map<String, Float> parseMetrics(
@@ -122,8 +125,8 @@ class DnsDiscoveryExtensionIT {
             final @NotNull Set<String> metrics) {
         return metricsDump.lines()
                 .filter(s -> !s.startsWith("#"))
-                .map(s -> s.split(" "))
-                .filter(splits -> metrics.contains(splits[0]))
+                .map(s -> s.split(" ", 2))
+                .filter(splits -> splits.length == 2 && metrics.contains(splits[0]))
                 .peek(strings -> log.info(Arrays.toString(strings)))
                 .map(splits -> Map.entry(splits[0], Float.parseFloat(splits[1])))
                 .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue, Float::max));

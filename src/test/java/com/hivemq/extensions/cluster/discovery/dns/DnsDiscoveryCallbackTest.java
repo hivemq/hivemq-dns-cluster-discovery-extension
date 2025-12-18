@@ -60,10 +60,10 @@ class DnsDiscoveryCallbackTest {
     }
 
     @Test
+    @SuppressWarnings("unchecked")
     void whenInitAndReload_thenAddressIsProvided() {
         dnsDiscoveryCallback.init(input, output);
 
-        //noinspection unchecked
         final ArgumentCaptor<List<ClusterNodeAddress>> captor = ArgumentCaptor.forClass(List.class);
         verify(output).provideCurrentNodes(captor.capture());
         assertThat(captor.getValue()).containsExactly(new ClusterNodeAddress("172.16.16.1", 1883));
@@ -71,6 +71,8 @@ class DnsDiscoveryCallbackTest {
         dnsDiscoveryCallback.reload(input, output);
 
         verify(output, times(2)).provideCurrentNodes(captor.capture());
-        assertThat(captor.getValue()).containsExactly(new ClusterNodeAddress("172.16.16.1", 1883));
+        final var capturedAddresses = captor.getValue();
+        assertThat(capturedAddresses).containsExactly(new ClusterNodeAddress("172.16.16.1", 1883));
+        assertThat(capturedAddresses.getFirst()).isEqualTo(new ClusterNodeAddress("172.16.16.1", 1883));
     }
 }

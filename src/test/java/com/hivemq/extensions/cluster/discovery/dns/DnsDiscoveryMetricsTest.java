@@ -66,8 +66,7 @@ class DnsDiscoveryMetricsTest {
     @Test
     void test_registerAddressCountGauge() {
         final var addresses = new ArrayList<>(List.of(1));
-        final var addressesCount = new AtomicInteger(0);
-        addressesCount.set(addresses.size());
+        final var addressesCount = new AtomicInteger(addresses.size());
 
         metrics.registerAddressCountGauge(addressesCount::get);
 
@@ -75,10 +74,10 @@ class DnsDiscoveryMetricsTest {
         final var gauge = metricRegistry.getGauges().get(name);
         assertThat(gauge.getValue()).isEqualTo(addresses.size());
 
-        addresses.add(2);
-        addresses.add(3);
+        addresses.addAll(List.of(2, 3));
         addressesCount.set(addresses.size());
         assertThat(gauge.getValue()).isEqualTo(addresses.size());
+        assertThat(addresses.getLast()).isEqualTo(3);
     }
 
     @Test

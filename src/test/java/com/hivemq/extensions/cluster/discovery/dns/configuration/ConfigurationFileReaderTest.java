@@ -46,7 +46,9 @@ class ConfigurationFileReaderTest {
 
     @Test
     void whenConfigIsCorrect_thenUseValues() throws Exception {
-        Files.writeString(configPath, "discoveryAddress:task.hivemq\nresolutionTimeout:10");
+        Files.writeString(configPath, """
+                discoveryAddress:task.hivemq
+                resolutionTimeout:10""");
 
         final var config = configurationFileReader.get();
         assertThat(config.getFileResolutionTimeout()).isEqualTo(10);
@@ -55,17 +57,23 @@ class ConfigurationFileReaderTest {
 
     @Test
     void whenTypoInResolutionTimeout_thenThrowException() throws Exception {
-        Files.writeString(configPath, "discoveryAddress:\nresolutionTimeout:30Seconds");
+        Files.writeString(configPath, """
+                discoveryAddress:
+                resolutionTimeout:30Seconds""");
 
-        assertThatThrownBy(() -> configurationFileReader.get().getFileResolutionTimeout()).isInstanceOf(
-                UnsupportedOperationException.class).hasMessageContaining("Cannot convert '30Seconds' to int");
+        assertThatThrownBy(() -> configurationFileReader.get().getFileResolutionTimeout())
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("Cannot convert '30Seconds' to int");
     }
 
     @Test
     void whenTypoInReloadInterval_thenThrowException() throws Exception {
-        Files.writeString(configPath, "discoveryAddress:\nreloadInterval:30Seconds");
+        Files.writeString(configPath, """
+                discoveryAddress:
+                reloadInterval:30Seconds""");
 
-        assertThatThrownBy(() -> configurationFileReader.get().getFileReloadInterval()).isInstanceOf(
-                UnsupportedOperationException.class).hasMessageContaining("Cannot convert '30Seconds' to int");
+        assertThatThrownBy(() -> configurationFileReader.get().getFileReloadInterval())
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("Cannot convert '30Seconds' to int");
     }
 }
