@@ -62,7 +62,7 @@ oci {
                         permissions("opt/hivemq/extensions/", 0b111_111_101)
                         into("opt/hivemq/extensions") {
                             permissions("*/", 0b111_111_101)
-                            permissions("*/dnsdiscovery.properties", 0b110_110_100)
+                            permissions("*/conf/dnsdiscovery.properties", 0b110_110_100)
                             permissions("*/hivemq-extension.xml", 0b110_110_100)
                             from(zipTree(tasks.hivemqExtensionZip.flatMap { it.archiveFile }))
                         }
@@ -93,7 +93,7 @@ testing {
                 implementation(libs.assertj)
                 implementation(libs.mockito)
                 implementation(libs.mockito.junitJupiter)
-                runtimeOnly(libs.logback.classic)
+                implementation(libs.logback.classic)
             }
         }
         "integrationTest"(JvmTestSuite::class) {
