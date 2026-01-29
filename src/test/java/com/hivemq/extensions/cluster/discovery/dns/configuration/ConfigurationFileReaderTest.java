@@ -31,10 +31,14 @@ class ConfigurationFileReaderTest {
     private @NotNull ConfigurationFileReader configurationFileReader;
     private @NotNull Path configPath;
 
+    @TempDir
+    private @NotNull Path tempDir;
+
     @BeforeEach
-    void setUp(final @TempDir @NotNull Path tempDir) {
+    void setUp() throws Exception {
         configurationFileReader = new ConfigurationFileReader(tempDir.toFile());
         configPath = tempDir.resolve(ConfigurationFileReader.CONFIG_PATH);
+        Files.createDirectories(configPath.getParent());
     }
 
     @Test
@@ -61,9 +65,8 @@ class ConfigurationFileReaderTest {
                 discoveryAddress:
                 resolutionTimeout:30Seconds""");
 
-        assertThatThrownBy(() -> configurationFileReader.get().getFileResolutionTimeout())
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("Cannot convert '30Seconds' to int");
+        assertThatThrownBy(() -> configurationFileReader.get().getFileResolutionTimeout()).isInstanceOf(
+                UnsupportedOperationException.class).hasMessageContaining("Cannot convert '30Seconds' to int");
     }
 
     @Test
@@ -72,8 +75,21 @@ class ConfigurationFileReaderTest {
                 discoveryAddress:
                 reloadInterval:30Seconds""");
 
-        assertThatThrownBy(() -> configurationFileReader.get().getFileReloadInterval())
-                .isInstanceOf(UnsupportedOperationException.class)
-                .hasMessageContaining("Cannot convert '30Seconds' to int");
+        assertThatThrownBy(() -> configurationFileReader.get().getFileReloadInterval()).isInstanceOf(
+                UnsupportedOperationException.class).hasMessageContaining("Cannot convert '30Seconds' to int");
+    }
+
+    @Test
+    void whenConfigAtLegacyLocation_thenUseValues() throws Exception {
+        final var legacyPath = tempDir.resolve(ConfigurationFileReader.LEGACY_CONFIG_PATH);
+        Files.writeString(legacyPath, """
+                discoveryAddress:legacy.hivemq
+                resolutionTimeout:20""");
+
+        // create a new reader so ConfigResolver picks up the legacy file
+        final var legacyReader = new ConfigurationFileReader(tempDir.toFile());
+        final var config = legacyReader.get();
+        assertThat(config.getFileResolutionTimeout()).isEqualTo(20);
+        assertThat(config.getFileDiscoveryAddress()).isEqualTo("legacy.hivemq");
     }
 }
