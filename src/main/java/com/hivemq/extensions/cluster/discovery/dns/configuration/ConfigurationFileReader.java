@@ -30,13 +30,16 @@ import java.util.Properties;
  */
 public class ConfigurationFileReader {
 
-    static final @NotNull String CONFIG_PATH = "dnsdiscovery.properties";
+    static final @NotNull String EXTENSION_NAME = "DNS Cluster Discovery Extension";
+    static final @NotNull String CONFIG_PATH = "conf/config.properties";
+    static final @NotNull String LEGACY_CONFIG_PATH = "dnsdiscovery.properties";
 
-    private final @NotNull File extensionHomeFolder;
+    private final @NotNull ConfigResolver configResolver;
 
     public ConfigurationFileReader(final @NotNull File extensionHomeFolder) {
-        this.extensionHomeFolder = extensionHomeFolder;
-        ConfigFactory.setProperty("configFile", new File(extensionHomeFolder, CONFIG_PATH).getAbsolutePath());
+        this.configResolver =
+                new ConfigResolver(extensionHomeFolder.toPath(), EXTENSION_NAME, CONFIG_PATH, LEGACY_CONFIG_PATH);
+        ConfigFactory.setProperty("configFile", configResolver.get().toFile().getAbsolutePath());
     }
 
     /**
@@ -46,7 +49,7 @@ public class ConfigurationFileReader {
      * @return DnsDiscoveryConfigFile The configuration from the config file or default values.
      */
     public @NotNull DnsDiscoveryConfigFile get() {
-        final var propertiesFile = new File(extensionHomeFolder, CONFIG_PATH);
+        final var propertiesFile = configResolver.get().toFile();
         try (final var inputStream = new FileInputStream(propertiesFile)) {
             final var properties = new Properties();
             properties.load(inputStream);

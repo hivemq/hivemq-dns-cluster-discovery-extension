@@ -30,7 +30,7 @@ After this adapt the properties to your needs as described in the Configuration 
 
 The following environment variables or property keys should be used to customize the discovery parameters.
 
-If a properties file is provided (`dnsdiscovery.properties` in `conf/`
+If a properties file is provided (`config.properties` in `conf/`
 folder), the extension will use the key-value pairs from this file and reload the values on file changes.
 
 The extension will attempt to load the properties file first.
