@@ -1,3 +1,6 @@
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
+import org.gradle.api.tasks.testing.logging.TestLogEvent
+
 plugins {
     alias(libs.plugins.hivemq.extension)
     alias(libs.plugins.defaults)
@@ -62,8 +65,9 @@ oci {
                         permissions("opt/hivemq/extensions/", 0b111_111_101)
                         into("opt/hivemq/extensions") {
                             permissions("*/", 0b111_111_101)
-                            permissions("*/dnsdiscovery.properties", 0b110_110_100)
                             permissions("*/hivemq-extension.xml", 0b110_110_100)
+                            permissions("*/conf/", 0b111_111_101)
+                            permissions("*/conf/config.properties", 0b110_110_100)
                             from(zipTree(tasks.hivemqExtensionZip.flatMap { it.archiveFile }))
                         }
                     }
@@ -93,7 +97,25 @@ testing {
                 implementation(libs.assertj)
                 implementation(libs.mockito)
                 implementation(libs.mockito.junitJupiter)
-                runtimeOnly(libs.logback.classic)
+                implementation(libs.logback.classic)
+            }
+            targets.configureEach {
+                testTask {
+                    testLogging {
+                        events = setOf(
+                            TestLogEvent.STARTED,
+                            TestLogEvent.PASSED,
+                            TestLogEvent.SKIPPED,
+                            TestLogEvent.FAILED,
+                            TestLogEvent.STANDARD_ERROR,
+                        )
+                        exceptionFormat = TestExceptionFormat.FULL
+                        showStandardStreams = true
+                    }
+                    reports {
+                        junitXml.isOutputPerTestCase = true
+                    }
+                }
             }
         }
         "integrationTest"(JvmTestSuite::class) {

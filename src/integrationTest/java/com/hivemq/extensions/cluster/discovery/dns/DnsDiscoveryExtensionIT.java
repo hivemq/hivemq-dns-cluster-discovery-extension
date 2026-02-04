@@ -74,7 +74,7 @@ class DnsDiscoveryExtensionIT {
                 .asCompatibleSubstituteFor("hivemq/hivemq4"))
                 .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
                 .withCopyToContainer(Transferable.of(config),
-                        "/opt/hivemq/extensions/hivemq-dns-cluster-discovery/dnsdiscovery.properties")
+                        "/opt/hivemq/extensions/hivemq-dns-cluster-discovery/conf/config.properties")
                 .withExposedPorts(9399)
                 .withExtraHost("host.docker.internal", "host-gateway")
                 .withEnv("HIVEMQ_DISABLE_STATISTICS", "true");
@@ -109,11 +109,41 @@ class DnsDiscoveryExtensionIT {
         assertThat(metrics.get(IP_COUNT_METRIC)).isEqualTo(0);
     }
 
+    @Test
+    @Timeout(value = 2, unit = TimeUnit.MINUTES)
+    void configAtLegacyLocation_singleNode() throws Exception {
+        final var legacyConfig = """
+                dnsServerAddress=host.docker.internal:%d
+                discoveryAddress=%s
+                resolutionTimeout=30
+                reloadInterval=60
+                """.formatted(testDnsServer.localAddress().getPort(), DNS_DISCOVERY_ADDRESS);
+
+        final var legacyNode = new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-dns-cluster-discovery")
+                .asCompatibleSubstituteFor("hivemq/hivemq4"))
+                .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
+                .withCopyToContainer(Transferable.of(legacyConfig),
+                        "/opt/hivemq/extensions/hivemq-dns-cluster-discovery/dnsdiscovery.properties")
+                .withExposedPorts(9399)
+                .withExtraHost("host.docker.internal", "host-gateway")
+                .withEnv("HIVEMQ_DISABLE_STATISTICS", "true");
+
+        try (legacyNode) {
+            legacyNode.start();
+            final var metrics = getMetrics(legacyNode);
+            assertThat(metrics.get(SUCCESS_METRIC)).isEqualTo(1);
+        }
+    }
+
     private @NotNull Map<String, Float> getMetrics() throws Exception {
+        return getMetrics(node);
+    }
+
+    private @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer container) throws Exception {
         try (final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()) {
             //noinspection HttpUrlsUsage
             final var request = HttpRequest.newBuilder()
-                    .uri(URI.create("http://" + node.getHost() + ":" + node.getMappedPort(9399) + "/metrics"))
+                    .uri(URI.create("http://" + container.getHost() + ":" + container.getMappedPort(9399) + "/metrics"))
                     .build();
             final var response = client.send(request, HttpResponse.BodyHandlers.ofString());
             return parseMetrics(response.body(), Set.of(SUCCESS_METRIC, FAILURE_METRIC, IP_COUNT_METRIC));
