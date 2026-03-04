@@ -120,14 +120,15 @@ class DnsDiscoveryExtensionIT {
                 reloadInterval=60
                 """.formatted(testDnsServer.localAddress().getPort(), DNS_DISCOVERY_ADDRESS);
 
-        final var legacyNode = new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-dns-cluster-discovery")
-                .asCompatibleSubstituteFor("hivemq/hivemq4"))
-                .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
-                .withCopyToContainer(Transferable.of(legacyConfig),
-                        "/opt/hivemq/extensions/hivemq-dns-cluster-discovery/dnsdiscovery.properties")
-                .withExposedPorts(9399)
-                .withExtraHost("host.docker.internal", "host-gateway")
-                .withEnv("HIVEMQ_DISABLE_STATISTICS", "true");
+        final var legacyNode =
+                new HiveMQContainer(OciImages.getImageName("hivemq/extensions/hivemq-dns-cluster-discovery")
+                        .asCompatibleSubstituteFor("hivemq/hivemq4"))
+                        .withHiveMQConfig(MountableFile.forClasspathResource("config.xml"))
+                        .withCopyToContainer(Transferable.of(legacyConfig),
+                                "/opt/hivemq/extensions/hivemq-dns-cluster-discovery/dnsdiscovery.properties")
+                        .withExposedPorts(9399)
+                        .withExtraHost("host.docker.internal", "host-gateway")
+                        .withEnv("HIVEMQ_DISABLE_STATISTICS", "true");
 
         try (legacyNode) {
             legacyNode.start();
@@ -142,7 +143,7 @@ class DnsDiscoveryExtensionIT {
 
     private @NotNull Map<String, Float> getMetrics(final @NotNull HiveMQContainer container) throws Exception {
         try (final var client = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).build()) {
-            //noinspection HttpUrlsUsage
+            // noinspection HttpUrlsUsage
             final var request = HttpRequest.newBuilder()
                     .uri(URI.create("http://" + container.getHost() + ":" + container.getMappedPort(9399) + "/metrics"))
                     .build();

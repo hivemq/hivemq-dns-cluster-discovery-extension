@@ -114,7 +114,6 @@ class DnsDiscoveryConfigExtendedTest {
         assertThat(configExtended.getDnsServerAddress()).isEmpty();
     }
 
-
     @Test
     void test_resolutionTimeout_env() {
         when(configEnvironment.getEnvResolutionTimeout()).thenReturn("1234");
@@ -143,7 +142,6 @@ class DnsDiscoveryConfigExtendedTest {
         configExtended.resolutionTimeout();
         assertThat(configExtended.getResolutionTimeout()).isEqualTo(30);
     }
-
 
     @Test
     void test_reloadInterval_env() {

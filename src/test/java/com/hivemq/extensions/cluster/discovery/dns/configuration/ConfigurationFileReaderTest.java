@@ -66,8 +66,9 @@ class ConfigurationFileReaderTest {
                 discoveryAddress:
                 resolutionTimeout:30Seconds""");
 
-        assertThatThrownBy(() -> configurationFileReader.get().getFileResolutionTimeout()).isInstanceOf(
-                UnsupportedOperationException.class).hasMessageContaining("Cannot convert '30Seconds' to int");
+        assertThatThrownBy(() -> configurationFileReader.get().getFileResolutionTimeout())
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("Cannot convert '30Seconds' to int");
     }
 
     @Test
@@ -76,8 +77,9 @@ class ConfigurationFileReaderTest {
                 discoveryAddress:
                 reloadInterval:30Seconds""");
 
-        assertThatThrownBy(() -> configurationFileReader.get().getFileReloadInterval()).isInstanceOf(
-                UnsupportedOperationException.class).hasMessageContaining("Cannot convert '30Seconds' to int");
+        assertThatThrownBy(() -> configurationFileReader.get().getFileReloadInterval())
+                .isInstanceOf(UnsupportedOperationException.class)
+                .hasMessageContaining("Cannot convert '30Seconds' to int");
     }
 
     @Test

@@ -53,8 +53,8 @@ public class DnsDiscoveryExtensionMain implements ExtensionMain {
 
             Services.clusterService().addDiscoveryCallback(dnsDiscoveryCallback);
         } catch (final ConfigurationException e) {
-            extensionStartOutput.preventExtensionStartup("Error while reading the configuration" +
-                    ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
+            extensionStartOutput.preventExtensionStartup(
+                    "Error while reading the configuration" + ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
         } catch (final Exception e) {
             extensionStartOutput.preventExtensionStartup("Unknown error while starting the extension" +
                     ((e.getMessage() != null) ? ": " + e.getMessage() : ""));
