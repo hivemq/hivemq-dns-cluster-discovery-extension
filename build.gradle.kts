@@ -5,7 +5,7 @@ plugins {
     alias(libs.plugins.hivemq.extension)
     alias(libs.plugins.defaults)
     alias(libs.plugins.oci)
-    alias(libs.plugins.license)
+    alias(libs.plugins.spotless)
 }
 
 group = "com.hivemq.extensions"
@@ -139,11 +139,11 @@ testing {
     }
 }
 
-license {
-    header = rootDir.resolve("HEADER")
-    mapping("java", "SLASHSTAR_STYLE")
-    exclude("com/hivemq/extensions/cluster/discovery/dns/TestDnsServer.java")
-    exclude("hivemq-prometheus-extension/**/*")
+spotless {
+    java {
+        targetExclude("src/integrationTest/java/com/hivemq/extensions/cluster/discovery/dns/TestDnsServer.java")
+        licenseHeaderFile(rootDir.resolve("HEADER"))
+    }
 }
 
 // configure reproducible builds
