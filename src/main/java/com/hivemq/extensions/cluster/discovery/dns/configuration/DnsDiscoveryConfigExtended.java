@@ -181,8 +181,7 @@ public class DnsDiscoveryConfigExtended {
     }
 
     /**
-     * Getter for the DNS server address. Its value is either from an environment
-     * variable or a property configuration.
+     * Getter for the DNS server address. Its value is either from an environment variable or a property configuration.
      *
      * @return String - the DNS server address
      */
@@ -191,8 +190,7 @@ public class DnsDiscoveryConfigExtended {
     }
 
     /**
-     * Getter for the discovery address. Its value is either from an environment
-     * variable or a properties configuration.
+     * Getter for the discovery address. Its value is either from an environment variable or a properties configuration.
      *
      * @return String - the discovery address
      */
@@ -201,8 +199,8 @@ public class DnsDiscoveryConfigExtended {
     }
 
     /**
-     * Getter for the discovery resolution timeout. Its value is either from an environment
-     * variable, a properties configuration or its default setting.
+     * Getter for the discovery resolution timeout. Its value is either from an environment variable, a properties
+     * configuration or its default setting.
      *
      * @return int - the resolution timeout
      */
@@ -211,8 +209,8 @@ public class DnsDiscoveryConfigExtended {
     }
 
     /**
-     * Getter for the discovery reload interval. Its value is either from an environment
-     * variable, a properties configuration or its default setting.
+     * Getter for the discovery reload interval. Its value is either from an environment variable, a properties
+     * configuration or its default setting.
      *
      * @return int - the reload interval
      */

@@ -35,12 +35,10 @@ class DnsDiscoveryMetrics {
 
     DnsDiscoveryMetrics(final @NotNull MetricRegistry metricRegistry) {
         this.metricRegistry = metricRegistry;
-        this.querySuccessCount = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
-                DNS_DISCOVERY_EXTENSION,
-                "query.success.count"));
-        this.queryFailedCount = metricRegistry.counter(MetricRegistry.name(HIVEMQ_PREFIX,
-                DNS_DISCOVERY_EXTENSION,
-                "query.failed.count"));
+        this.querySuccessCount = metricRegistry
+                .counter(MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "query.success.count"));
+        this.queryFailedCount = metricRegistry
+                .counter(MetricRegistry.name(HIVEMQ_PREFIX, DNS_DISCOVERY_EXTENSION, "query.failed.count"));
     }
 
     @NotNull Counter getQuerySuccessCount() {

@@ -46,8 +46,8 @@ import java.util.stream.Collectors;
 import static com.hivemq.extensions.cluster.discovery.dns.ExtensionConstants.EXTENSION_NAME;
 
 /**
- * Cluster discovery using DNS resolution of round-robin A records.
- * Uses non-blocking netty API for DNS resolution, reads discovery parameters as environment variables.
+ * Cluster discovery using DNS resolution of round-robin A records. Uses non-blocking netty API for DNS resolution,
+ * reads discovery parameters as environment variables.
  *
  * @author Daniel Krüger
  * @author Lukas Brand
@@ -132,8 +132,8 @@ class DnsDiscoveryCallback implements ClusterDiscoveryCallback {
 
         // use custom DNS server address if necessary
         final var dnsServerAddress = configuration.getDnsServerAddress();
-        dnsServerAddress.ifPresent(inetSocketAddress -> dnsNameResolverBuilder.nameServerProvider(new SingletonDnsServerAddressStreamProvider(
-                inetSocketAddress)));
+        dnsServerAddress.ifPresent(inetSocketAddress -> dnsNameResolverBuilder
+                .nameServerProvider(new SingletonDnsServerAddressStreamProvider(inetSocketAddress)));
 
         try (final var resolver = dnsNameResolverBuilder.build()) {
             final var addresses = resolver.resolveAll(discoveryAddress);
